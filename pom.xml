@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.antego</groupId>
-  <artifactId>iot-paradise</artifactId>
+  <artifactId>metrics-paradise</artifactId>
   <version>1.0.0</version>
 
   <name>IoT Paradise</name>
