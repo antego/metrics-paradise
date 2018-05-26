@@ -56,7 +56,7 @@ services:
     depends_on:
       - zookeeper
       
-  graphite-host:
+  graphite:
     image: hopsoft/graphite-statsd
     ports:
       - 2003
