@@ -1,11 +1,66 @@
 version: '3'
 
 services:
-  cilckhouse:
-    image: yandex/clickhouse-server
+  zookeeper:
+    image: bitnami/zookeeper:3.4.12
     ports:
-    - "8123:8123"
-    - "9000:9000"
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      
+  clickhouse-1-1:
+    image: yandex/clickhouse-server:1.1
+    ports:
+      - "8123:8123"
+      - "9000:9000"
     volumes:
-    - ./config/users.xml:/etc/clickhouse-server/users.xml
+      - ./config/users.xml:/etc/clickhouse-server/users.xml
+      - ./config/config.xml:/etc/clickhouse-server/config.xml
+      - ./config/macros-1-1.xml:/etc/clickhouse-server/substitutions.xml
+    depends_on:
+      - zookeeper
+      
+  clickhouse-1-2:
+    image: yandex/clickhouse-server:1.1
+    ports:
+      - "8124:8123"
+      - "9001:9000"
+    volumes:
+      - ./config/users.xml:/etc/clickhouse-server/users.xml
+      - ./config/config.xml:/etc/clickhouse-server/config.xml
+      - ./config/macros-1-2.xml:/etc/clickhouse-server/substitutions.xml
+    depends_on:
+      - zookeeper
+      
+  clickhouse-2-1:
+    image: yandex/clickhouse-server:1.1
+    ports:
+      - "8125:8123"
+      - "9002:9000"
+    volumes:
+      - ./config/users.xml:/etc/clickhouse-server/users.xml
+      - ./config/config.xml:/etc/clickhouse-server/config.xml
+      - ./config/macros-2-1.xml:/etc/clickhouse-server/substitutions.xml
+    depends_on:
+      - zookeeper
+      
+  clickhouse-2-2:
+    image: yandex/clickhouse-server:1.1
+    ports:
+      - "8126:8123"
+      - "9003:9000"
+    volumes:
+      - ./config/users.xml:/etc/clickhouse-server/users.xml
+      - ./config/config.xml:/etc/clickhouse-server/config.xml
+      - ./config/macros-2-2.xml:/etc/clickhouse-server/substitutions.xml
+    depends_on:
+      - zookeeper
+      
+  graphite-host:
+    image: hopsoft/graphite-statsd
+    ports:
+      - 2003
+      - 8080:80
+
+
 

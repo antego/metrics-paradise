@@ -9,21 +9,39 @@ Why it's the best place for metrics:
 
 How-to use ClickHouse
 
-Database has its own build in http client. Metrics can be send and extracted via http protocol. Password is set to the 'default' user (see config/users.xml) so it's secured :)
+Database has build in http client. Metrics can be send and extracted via http protocol. Password is set to the 'default' user (see config/users.xml) so it's secured :)
 ### Create table
 Date column is needed by partitoning alghorithm in MergeTree engine
 ```
-echo 'CREATE TABLE metric (time DateTime, date Date, metricName String, metricValue Float64) ENGINE = MergeTree(date, (time, metricName), 8192)' | POST 'http://default:password@localhost:8123/'
+echo 'CREATE TABLE Metric (time DateTime, date Date DEFAULT toDate(time), name String, value Float64) ENGINE = MergeTree(date, (time, name), 8192)' | POST 'http://default:password@localhost:8123/'
 ```
 ### Send a metric
 ```
-echo -ne '2018-01-01 12:13:45\t2018-01-01\tmetricname\t13.5\n' | POST 'http://default:password@localhost:8123/?query=INSERT INTO metric FORMAT TabSeparated'
+echo -ne '2018-01-01 12:13:45\tmetricname\t13.5\n' | POST 'http://default:password@localhost:8123/?query=INSERT INTO Metric (time, name, value) FORMAT TabSeparated'
 ```
 ### Verify data has been saved
 ```
-GET 'http://default:password@localhost:8123/?query=SELECT * FROM metric'
+GET 'http://default:password@localhost:8123/?query=SELECT * FROM Metric'
 ```
 ### Drop table
 ```
-echo 'DROP TABLE metric' | POST 'http://default:password@localhost:8123/'
+echo 'DROP TABLE Metric' | POST 'http://default:password@localhost:8123/'
+```
+
+Sharded and replicated table
+```
+echo 'CREATE TABLE IF NOT EXISTS MetricReplicated (    
+    time DateTime,
+    date Date DEFAULT toDate(time),
+    name String,
+    value Float64
+) ENGINE = ReplicatedMergeTree('\''/clickhouse/tables/{shard}/hits'\'', '\''{replica}'\'', date, (time, name), 8192)' | POST 'http://default:password@localhost:8123/'
+
+echo 'CREATE TABLE IF NOT EXISTS MetricSharded AS MetricReplicated
+      ENGINE = Distributed(cluster, default, MetricReplicated, rand())' | POST 'http://default:password@localhost:8123/'
+      
+      
+echo -ne '2018-01-01 12:13:45\tmetricname\t13.5\n' | POST 'http://default:password@localhost:8123/?query=INSERT INTO MetricReplicated (time, name, value) FORMAT TabSeparated'
+
+GET 'http://default:password@localhost:8123/?query=SELECT * FROM MetricReplicated'
 ```
