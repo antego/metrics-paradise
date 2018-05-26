@@ -9,21 +9,41 @@ import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 
 
-public class Coordinator implements AutoCloseable {
+public class Coordinator implements AutoCloseable, Watcher {
     private static final Logger logger = LoggerFactory.getLogger(Coordinator.class);
 
-    private final ZooKeeper zookeeper;
     private final String rootNodeName;
     private final String nodePrefix;
+    private final Config config;
+    private ZooKeeper zookeeper;
 
-    public Coordinator(Config config, ZooKeeper zookeeper) throws KeeperException, InterruptedException {
-        this.zookeeper = zookeeper;
+    public Coordinator(Config config) {
+        this.config = config;
         rootNodeName = config.getString("zookeeper.root.node.name");
         nodePrefix = config.getString("zookeeper.node.prefix");
+    }
 
-        String selfHostPort = config.getString("host") + ":" + config.getInt("port");
-
+    public void init() throws KeeperException, InterruptedException {
         createRootNodeIfNotExists();
+        createSelfNode();
+    }
+
+    @Override
+    public void close() throws Exception {
+        zookeeper.close();
+    }
+
+    @Override
+    public void process(WatchedEvent event) {
+
+    }
+
+    public void setZookeeper(ZooKeeper zookeeper) {
+        this.zookeeper = zookeeper;
+    }
+
+    private void createSelfNode() throws KeeperException, InterruptedException {
+        String selfHostPort = config.getString("host") + ":" + config.getInt("port");
         zookeeper.create(nodePrefix, selfHostPort.getBytes(StandardCharsets.UTF_8), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
     }
 
@@ -32,10 +52,5 @@ public class Coordinator implements AutoCloseable {
         if (stat == null) {
             logger.info(zookeeper.create(rootNodeName, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT));
         }
-    }
-
-    @Override
-    public void close() throws Exception {
-        zookeeper.close();
     }
 }

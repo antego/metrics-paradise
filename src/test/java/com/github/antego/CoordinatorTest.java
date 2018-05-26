@@ -32,7 +32,7 @@ public class CoordinatorTest {
 
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
-        zookeeperClient = connectToZookeeper();
+        zookeeperClient = createZookeeperClient();
     }
 
     @AfterClass
@@ -42,14 +42,26 @@ public class CoordinatorTest {
 
     @Test
     public void shouldCreateNodeOnStart() throws Exception {
-        try (Coordinator coordinator = new Coordinator(config, connectToZookeeper())) {
-            Stat stat = zookeeperClient.exists(config.getString("zookeeper.root.node.name"), false);
+        try (Coordinator coordinator = new Coordinator(config)) {
+            coordinator.setZookeeper(createZookeeperClient());
+            coordinator.init();
 
+            Stat stat = zookeeperClient.exists(config.getString("zookeeper.root.node.name"), false);
             assertTrue(stat != null);
         }
     }
 
-    private static ZooKeeper connectToZookeeper() throws IOException {
+    @Test
+    public void shouldDeleteNodeOnExit() throws Exception {
+        try (Coordinator coordinator = new Coordinator(config)) {
+            coordinator.setZookeeper(createZookeeperClient());
+            coordinator.init();
+        }
+        Stat stat = zookeeperClient.exists(config.getString("zookeeper.node.prefix") + "0000000001", false);
+        assertTrue(stat == null);
+    }
+
+    private static ZooKeeper createZookeeperClient() throws IOException {
         CountDownLatch latch = new CountDownLatch(1);
         ZooKeeper zooKeeper = new ZooKeeper("localhost:" + zookeeperContainer.getMappedPort(2181), 200000, event -> {
             logger.info("New state {}", event.getState());
