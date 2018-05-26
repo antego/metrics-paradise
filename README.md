@@ -28,7 +28,7 @@ GET 'http://default:password@localhost:8123/?query=SELECT * FROM Metric'
 echo 'DROP TABLE Metric' | POST 'http://default:password@localhost:8123/'
 ```
 
-Sharded and replicated table
+## Sharded and replicated table
 ```
 echo 'CREATE TABLE IF NOT EXISTS MetricReplicated (    
     time DateTime,
