@@ -1,4 +1,4 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;

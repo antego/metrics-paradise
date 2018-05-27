@@ -1,14 +1,15 @@
 package com.github.antego;
 
+import com.github.antego.cluster.Coordinator;
+import com.github.antego.cluster.RootNodeWatcher;
+import com.github.antego.cluster.RootNodeWatcherFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
-import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

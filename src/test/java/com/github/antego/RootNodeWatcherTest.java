@@ -1,5 +1,7 @@
 package com.github.antego;
 
+import com.github.antego.cluster.Coordinator;
+import com.github.antego.cluster.RootNodeWatcher;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.zookeeper.KeeperException;

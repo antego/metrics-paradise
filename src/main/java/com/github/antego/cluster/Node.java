@@ -1,4 +1,4 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
 import java.nio.charset.StandardCharsets;
 

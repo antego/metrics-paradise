@@ -1,4 +1,4 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
 public class RootNodeWatcherFactory {
     public RootNodeWatcher createWatcher(Coordinator coordinator) {

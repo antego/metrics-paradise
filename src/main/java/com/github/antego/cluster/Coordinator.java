@@ -1,5 +1,6 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
+import com.github.antego.ConfigurationKey;
 import com.typesafe.config.Config;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
