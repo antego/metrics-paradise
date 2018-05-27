@@ -103,7 +103,7 @@ public class Coordinator implements AutoCloseable {
     }
 
     public boolean isMetricOwnedByNode(int metricHashCode) {
-        return metricHashCode % clusterState.getNumberOfInstances() == clusterState.getSelfOrdinal();
+        return metricHashCode % clusterState.getNumberOfInstances() == clusterState.getSelfIndex();
     }
 
     public void advertiseSelf(String id) throws KeeperException, InterruptedException {
@@ -115,6 +115,9 @@ public class Coordinator implements AutoCloseable {
     }
 
     public URI getUriOfMetricNode(String name) {
-        return null;
+        Node node = clusterState.getNodeByMetric(name.hashCode());
+        String host = node.getHost();
+        int port = node.getPort();
+        return URI.create("http://" + host + ":" + port);
     }
 }

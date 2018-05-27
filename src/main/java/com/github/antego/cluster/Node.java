@@ -3,9 +3,9 @@ package com.github.antego.cluster;
 import java.nio.charset.StandardCharsets;
 
 public class Node {
-    private String id;
-    private String host;
-    private int port;
+    private final String id;
+    private final String host;
+    private final int port;
 
     public Node(String id, String host, int port) {
         this.id = id;
@@ -22,5 +22,13 @@ public class Node {
         String host = hostPort[0];
         int port = Integer.valueOf(hostPort[1]);
         return new Node(id, host, port);
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
     }
 }
