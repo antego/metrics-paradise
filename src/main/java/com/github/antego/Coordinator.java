@@ -1,13 +1,18 @@
 package com.github.antego;
 
 import com.typesafe.config.Config;
-import org.apache.zookeeper.*;
+import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 
 public class Coordinator implements AutoCloseable {
@@ -82,10 +87,7 @@ public class Coordinator implements AutoCloseable {
                 logger.error("Can't retrieve data for node [{}]. Node not found.", e);
                 continue;
             }
-            String[] hostPort = new String(data, StandardCharsets.UTF_8).split(":");
-            String host = hostPort[0];
-            int port = Integer.valueOf(hostPort[1]);
-            Node node = new Node(id, host, port);
+            Node node = Node.fromIdAndData(id, data);
             nodes.add(node);
         }
         clusterState = new ClusterState(nodes, selfId);
