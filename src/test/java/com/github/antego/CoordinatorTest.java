@@ -1,8 +1,8 @@
 package com.github.antego;
 
 import com.github.antego.cluster.Coordinator;
-import com.github.antego.cluster.RootNodeWatcher;
-import com.github.antego.cluster.RootNodeWatcherFactory;
+import com.github.antego.cluster.ClusterWatcher;
+import com.github.antego.cluster.ClusterWatcherFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -43,7 +43,7 @@ public class CoordinatorTest {
     private static GenericContainer zookeeperContainer;
     private static int zookeeperPort;
     private static ZooKeeper zookeeperClient;
-    private RootNodeWatcherFactory factory = mock(RootNodeWatcherFactory.class);
+    private ClusterWatcherFactory factory = mock(ClusterWatcherFactory.class);
 
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
@@ -117,7 +117,7 @@ public class CoordinatorTest {
     public void shouldAssignWatcherOnInit() throws Exception {
         CountDownLatch latch = new CountDownLatch(1); // need to wait till event comes back
         Coordinator coordinator = new Coordinator(config, factory);
-        RootNodeWatcher watcher = spy(new RootNodeWatcher(coordinator) {
+        ClusterWatcher watcher = spy(new ClusterWatcher(coordinator) {
             @Override
             public void process(WatchedEvent event) {
                 latch.countDown();

@@ -1,7 +1,7 @@
 package com.github.antego;
 
 import com.github.antego.cluster.Coordinator;
-import com.github.antego.cluster.RootNodeWatcher;
+import com.github.antego.cluster.ClusterWatcher;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.zookeeper.KeeperException;
@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class RootNodeWatcherTest {
+public class ClusterWatcherTest {
     private static final Config config = ConfigFactory.load();
 
     @ClassRule
@@ -45,7 +45,7 @@ public class RootNodeWatcherTest {
     @Test
     public void shouldNotifyAboutChildrenNodeChange() throws KeeperException, InterruptedException {
         Coordinator coordinator = mock(Coordinator.class);
-        RootNodeWatcher watcher = new RootNodeWatcher(coordinator);
+        ClusterWatcher watcher = new ClusterWatcher(coordinator);
 
         createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME));
         zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);

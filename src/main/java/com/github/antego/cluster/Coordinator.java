@@ -22,13 +22,13 @@ public class Coordinator implements AutoCloseable {
     private final String rootNodeName;
     private final String nodePrefix;
     private final Config config;
-    private final RootNodeWatcherFactory watcherFactory;
+    private final ClusterWatcherFactory watcherFactory;
     private volatile ZooKeeper zookeeper;
 
     private volatile ClusterState clusterState;
     private String selfId;
 
-    public Coordinator(Config config, RootNodeWatcherFactory watcherFactory) {
+    public Coordinator(Config config, ClusterWatcherFactory watcherFactory) {
         this.config = config;
         rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
         nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
@@ -80,7 +80,7 @@ public class Coordinator implements AutoCloseable {
      * Assignment of ClusterState is done to the volatile variable.
      */
     public void refreshClusterState() throws KeeperException, InterruptedException {
-        RootNodeWatcher watcher = watcherFactory.createWatcher(this);
+        ClusterWatcher watcher = watcherFactory.createWatcher(this);
         List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, watcher);
         List<Node> nodes = new ArrayList<>();
         for (String path : newChildrenNodes) {
