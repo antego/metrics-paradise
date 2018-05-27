@@ -20,7 +20,7 @@ public class StorageTest {
         long timestamp = 10;
         String name = "metric1";
         double value = 0.5;
-        storage.put(timestamp, name, value);
+        storage.put(new Metric(timestamp, name, value));
 
         List<Metric> metric = storage.get(name, 6L, 13L);
         assertEquals(timestamp, metric.get(0).getTimestamp());

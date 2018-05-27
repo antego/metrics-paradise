@@ -14,7 +14,8 @@ import java.util.List;
 
 public class Storage {
     private static final Config config = ConfigFactory.load();
-    private static final String metricTable = "create table if not exists metric (timestamp bigint, name varchar, value double)";
+    private static final String metricTable =
+            "create table if not exists metric (timestamp bigint, name varchar, value double)";
     private static final String metricPut = "insert into metric values (?, ?, ?)";
     private static final String metricGet =
             "select * from metric where timestamp >= ? and timestamp < ? and name = ? limit "
@@ -33,10 +34,13 @@ public class Storage {
     }
 
 
-    public void put(long timestamp, String name, double value) throws SQLException {
-        putStmt.setLong(1, timestamp);
-        putStmt.setString(2, name);
-        putStmt.setDouble(3, value);
+    //todo synchronized?
+    //todo index
+    //todo aggreagate queries
+    public void put(Metric metric) throws SQLException {
+        putStmt.setLong(1, metric.getTimestamp());
+        putStmt.setString(2, metric.getName());
+        putStmt.setDouble(3, metric.getValue());
         putStmt.execute();
     }
 
