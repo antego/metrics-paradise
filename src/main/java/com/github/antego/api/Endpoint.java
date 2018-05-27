@@ -1,6 +1,6 @@
 package com.github.antego.api;
 
-import com.github.antego.db.Storage;
+import com.github.antego.db.RouterStorage;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
@@ -11,11 +11,11 @@ import java.net.URI;
 
 public class Endpoint {
     private Server server;
-    private Storage storage;
+    private RouterStorage routerStorage;
 
     //todo secure
-    public Endpoint(Storage storage) {
-        this.storage = storage;
+    public Endpoint(RouterStorage routerStorage) {
+        this.routerStorage = routerStorage;
     }
 
     public void start() throws Exception {
@@ -28,7 +28,7 @@ public class Endpoint {
     public class StorageBinder extends AbstractBinder {
         @Override
         public void configure() {
-            bind(storage).to(Storage.class);
+            bind(routerStorage).to(RouterStorage.class);
         }
     }
 }

@@ -103,14 +103,14 @@ public class CoordinatorTest {
         Coordinator coordinator = new Coordinator(config, factory);
         coordinator.setZookeeper(zooKeeper);
         coordinator.advertiseSelf("3");
-        coordinator.notifyClusterStateChanged();
-
-        assertTrue(coordinator.isMyKey(2)); // 2 mod 3 = 2
-        assertTrue(coordinator.isMyKey(20)); // 20 mod 3 = 2
 
         coordinator.notifyClusterStateChanged();
-        assertFalse(coordinator.isMyKey(18)); // 18 mod 4 = 2
-        assertTrue(coordinator.isMyKey(29)); // 29 mod 4 = 1
+        assertTrue(coordinator.isMetricOwnedByNode(2)); // 2 mod 3 = 2
+        assertTrue(coordinator.isMetricOwnedByNode(20)); // 20 mod 3 = 2
+
+        coordinator.notifyClusterStateChanged();
+        assertFalse(coordinator.isMetricOwnedByNode(18)); // 18 mod 4 = 2
+        assertTrue(coordinator.isMetricOwnedByNode(29)); // 29 mod 4 = 1
     }
 
     @Test

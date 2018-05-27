@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Coordinator implements AutoCloseable {
@@ -26,6 +27,7 @@ public class Coordinator implements AutoCloseable {
     private volatile ZooKeeper zookeeper;
 
     private volatile ClusterState clusterState;
+    private AtomicInteger clusterStateVersion = new AtomicInteger();
     private String selfId;
 
     public Coordinator(Config config, ClusterWatcherFactory watcherFactory) {
@@ -96,13 +98,18 @@ public class Coordinator implements AutoCloseable {
             nodes.add(node);
         }
         clusterState = new ClusterState(nodes, selfId);
+        clusterStateVersion.incrementAndGet();
     }
 
-    public boolean isMyKey(int i) {
-        return i % clusterState.getNumberOfInstances() == clusterState.getSelfOrdinal();
+    public boolean isMetricOwnedByNode(int metricHashCode) {
+        return metricHashCode % clusterState.getNumberOfInstances() == clusterState.getSelfOrdinal();
     }
 
     public void advertiseSelf(String id) throws KeeperException, InterruptedException {
         createSelfNode(id);
+    }
+
+    public int getClusterStateVersion() {
+        return clusterStateVersion.get();
     }
 }

@@ -1,7 +1,7 @@
 package com.github.antego.api;
 
 import com.github.antego.db.Metric;
-import com.github.antego.db.Storage;
+import com.github.antego.db.RouterStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,11 +21,11 @@ import java.util.List;
 @Path("/metrics")
 public class MetricResource {
     private static final Logger logger = LoggerFactory.getLogger(MetricResource.class);
-    private final Storage storage;
+    private final RouterStorage routerStorage;
 
     @Inject
-    public MetricResource(Storage storage) {
-        this.storage = storage;
+    public MetricResource(RouterStorage routerStorage) {
+        this.routerStorage = routerStorage;
     }
 
     @GET
@@ -34,7 +34,7 @@ public class MetricResource {
                               @QueryParam("timestampend") long timestampEnd,
                               @QueryParam("metricname") String metricName) throws SQLException {
 
-        return dumpMetricsToTsv(storage.get(metricName, timestampStart, timestampEnd));
+        return dumpMetricsToTsv(routerStorage.get(metricName, timestampStart, timestampEnd));
     }
 
     @POST
@@ -52,7 +52,7 @@ public class MetricResource {
                     .build();
         }
         for (Metric metric : metrics) {
-            storage.put(metric);
+            routerStorage.put(metric);
         }
         return Response.status(Response.Status.CREATED).build();
     }
