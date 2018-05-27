@@ -52,13 +52,17 @@ public class Coordinator implements AutoCloseable {
         this.zookeeper = zookeeper;
     }
 
+    public void advertiseSelf(String id) throws KeeperException, InterruptedException {
+        createSelfNode(id);
+    }
+
     private void createSelfNode(String id) throws KeeperException, InterruptedException {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
         String nodePath = rootNodeName + "/" + nodePrefix + id;
-        String selfHost = config.getString("host");
-        int selfPort = config.getInt("port");
+        String selfHost = config.getString(ConfigurationKey.ADVERTISE_HOST);
+        int selfPort = config.getInt(ConfigurationKey.ADVERTISE_PORT);
         byte[] nodeData = (selfHost + ":" + selfPort).getBytes(StandardCharsets.UTF_8);
         zookeeper.create(nodePath, nodeData, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
         selfId = id;
@@ -104,10 +108,6 @@ public class Coordinator implements AutoCloseable {
 
     public boolean isMetricOwnedByNode(int metricHashCode) {
         return metricHashCode % clusterState.getNumberOfInstances() == clusterState.getSelfIndex();
-    }
-
-    public void advertiseSelf(String id) throws KeeperException, InterruptedException {
-        createSelfNode(id);
     }
 
     public int getClusterStateVersion() {

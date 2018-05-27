@@ -17,21 +17,25 @@ import javax.ws.rs.core.Response;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static com.github.antego.Utils.dumpMetricsToTsv;
 import static com.github.antego.Utils.parseTsv;
 
-@Path("/metrics")
+@Path("/")
 public class MetricResource {
     private static final Logger logger = LoggerFactory.getLogger(MetricResource.class);
     private final RouterStorage routerStorage;
+    private final CountDownLatch shutdown;
 
     @Inject
-    public MetricResource(RouterStorage routerStorage) {
+    public MetricResource(RouterStorage routerStorage, CountDownLatch shutdown) {
         this.routerStorage = routerStorage;
+        this.shutdown = shutdown;
     }
 
     @GET
+    @Path("/metrics")
     @Produces(MediaType.TEXT_PLAIN)
     public String getMetricsInTsv(@QueryParam("timestampstart") long timestampStart,
                               @QueryParam("timestampend") long timestampEnd,
@@ -41,6 +45,7 @@ public class MetricResource {
     }
 
     @POST
+    @Path("/metrics")
     @Consumes(MediaType.TEXT_PLAIN)
     public Response saveMetricsFromTsv(String tsv) throws Exception {
         List<Metric> metrics;
@@ -58,5 +63,12 @@ public class MetricResource {
             routerStorage.put(metric);
         }
         return Response.status(Response.Status.CREATED).build();
+    }
+
+    @POST
+    @Path("/shutdown")
+    public Response shutdown() {
+        shutdown.countDown();
+        return Response.status(200).build();
     }
 }

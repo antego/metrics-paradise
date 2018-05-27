@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class EndpointTest extends JerseyTest {
+public class MetricResourceTest extends JerseyTest {
     private RouterStorage routerStorage = mock(RouterStorage.class);
 
     @Override
@@ -65,6 +66,7 @@ public class EndpointTest extends JerseyTest {
         @Override
         public void configure() {
             bind(routerStorage).to(RouterStorage.class);
+            bind(new CountDownLatch(0)).to(CountDownLatch.class);
         }
     }
 }

@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.antego.ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME;
 import static com.github.antego.TestHelper.createPath;
-import static com.github.antego.TestHelper.createZookeeperClient;
 import static com.github.antego.TestHelper.generateRandomNode;
+import static com.github.antego.Utils.createZookeeperClient;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -50,7 +50,8 @@ public class CoordinatorTest {
                 .withEnv("ALLOW_ANONYMOUS_LOGIN", "yes");
         zookeeperContainer.start();
         zookeeperPort = zookeeperContainer.getMappedPort(2181);
-        zookeeperClient = createZookeeperClient(zookeeperPort);
+        zookeeperClient = createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort)));
     }
 
     @AfterClass
@@ -68,7 +69,8 @@ public class CoordinatorTest {
     @Test
     public void shouldCreateNodeOnStart() throws Exception {
         Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort))));
         coordinator.init();
 
         Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME), false);
@@ -78,7 +80,8 @@ public class CoordinatorTest {
     @Test
     public void shouldDeleteNodeOnExit() throws Exception {
         Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort))));
         coordinator.init();
         coordinator.advertiseSelf("1");
         coordinator.close();
@@ -122,7 +125,8 @@ public class CoordinatorTest {
             }
         });
         when(factory.createWatcher(eq(coordinator))).thenReturn(watcher);
-        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort))));
         coordinator.init();
 
         createPath(zookeeperClient, generateRandomNode(config.getString(ZOOKEEPER_ROOT_NODE_NAME)));

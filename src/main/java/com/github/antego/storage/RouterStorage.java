@@ -55,7 +55,7 @@ public class RouterStorage implements Storage {
         }
     }
 
-    private void doRebalanceIfNeeded() throws Exception {
+    public void doRebalanceIfNeeded() throws Exception {
         if (isClusterChanged()) {
             rebalance();
         }

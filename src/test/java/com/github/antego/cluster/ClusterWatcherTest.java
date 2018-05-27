@@ -5,6 +5,7 @@ import com.github.antego.cluster.Coordinator;
 import com.github.antego.cluster.ClusterWatcher;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.ZooKeeper;
@@ -19,8 +20,8 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static com.github.antego.TestHelper.createPath;
-import static com.github.antego.TestHelper.createZookeeperClient;
 import static com.github.antego.TestHelper.generateRandomNode;
+import static com.github.antego.Utils.createZookeeperClient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -38,7 +39,8 @@ public class ClusterWatcherTest {
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
         int zookeeperPort = zookeeperContainer.getMappedPort(2181);
-        zookeeperClient = createZookeeperClient(zookeeperPort);
+        zookeeperClient = createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort)));
     }
 
     @AfterClass
