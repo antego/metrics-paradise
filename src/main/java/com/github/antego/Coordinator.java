@@ -16,17 +16,15 @@ public class Coordinator implements AutoCloseable {
     private final String rootNodeName;
     private final String nodePrefix;
     private final Config config;
-    private final ZookeeperWatcherFactory watcherFactory;
-    private ZooKeeper zookeeper;
+    private volatile ZooKeeper zookeeper;
 
-    private ClusterState clusterState;
+    private volatile ClusterState clusterState;
     private String selfId;
 
-    public Coordinator(Config config, ZookeeperWatcherFactory watcherFactory) {
+    public Coordinator(Config config) {
         this.config = config;
         rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
         nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
-        this.watcherFactory = watcherFactory;
     }
 
     public void init() throws KeeperException, InterruptedException {
@@ -63,7 +61,11 @@ public class Coordinator implements AutoCloseable {
         logger.info("Created zookeeper root path {}", resultPath);
     }
 
-    //todo synchronized?
+    /*
+     * This method is called from the zookeeper event thread.
+     * No synchronization needed because methods of zookeeper client are thread-safe.
+     * Assignment of ClusterState is done to the volatile variable.
+     */
     public void notifyClusterStateChanged() throws KeeperException, InterruptedException {
         List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, true);
         List<Node> nodes = new ArrayList<>();
@@ -95,9 +97,5 @@ public class Coordinator implements AutoCloseable {
 
     public void advertiseSelf(String id) throws KeeperException, InterruptedException {
         createSelfNode(id);
-    }
-
-    public void advertiseSelf() throws KeeperException, InterruptedException {
-        createSelfNode(null);
     }
 }

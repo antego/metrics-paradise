@@ -16,28 +16,24 @@ import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
+import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.createZookeeperClient;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class ZookeeperWatcherTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(ZookeeperWatcherTest.class);
     private static final Config config = ConfigFactory.load();
-
 
     @ClassRule
     public static GenericContainer zookeeperContainer = new GenericContainer("bitnami/zookeeper:3.4.12")
             .withExposedPorts(2181)
             .withEnv("ALLOW_ANONYMOUS_LOGIN", "yes");
-    private static int zookeeperPort;
 
     private static ZooKeeper zookeeperClient;
 
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
-        zookeeperPort = zookeeperContainer.getMappedPort(2181);
+        int zookeeperPort = zookeeperContainer.getMappedPort(2181);
         zookeeperClient = createZookeeperClient(zookeeperPort);
     }
 
@@ -51,15 +47,12 @@ public class ZookeeperWatcherTest {
         Coordinator coordinator = mock(Coordinator.class);
         ZookeeperWatcher watcher = new ZookeeperWatcher(coordinator);
 
-        zookeeperClient.create(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        zookeeperClient.create(config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX), null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-
+        createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME));
+        createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX));
         zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
-        zookeeperClient.create(config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX) + "1", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX) + "1");
         zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
 
         verify(coordinator).notifyClusterStateChanged();
     }
-
-
 }

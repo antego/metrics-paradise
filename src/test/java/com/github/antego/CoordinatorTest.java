@@ -58,7 +58,7 @@ public class CoordinatorTest {
 
     @Test
     public void shouldCreateNodeOnStart() throws Exception {
-        try (Coordinator coordinator = new Coordinator(config, mock(ZookeeperWatcherFactory.class))) {
+        try (Coordinator coordinator = new Coordinator(config)) {
             coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
             coordinator.init();
 
@@ -69,7 +69,7 @@ public class CoordinatorTest {
 
     @Test
     public void shouldDeleteNodeOnExit() throws Exception {
-        try (Coordinator coordinator = new Coordinator(config, mock(ZookeeperWatcherFactory.class))) {
+        try (Coordinator coordinator = new Coordinator(config)) {
             coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
             coordinator.init();
         }
@@ -79,7 +79,6 @@ public class CoordinatorTest {
 
     @Test
     public void shouldSignalAboutChangedClusterState() throws KeeperException, InterruptedException {
-        ZookeeperWatcherFactory factory = mock(ZookeeperWatcherFactory.class);
         ZooKeeper zooKeeper = mock(ZooKeeper.class);
         when(zooKeeper.getChildren(any(), anyBoolean()))
                 .thenReturn(Arrays.asList("1", "2", "3"))
@@ -89,7 +88,7 @@ public class CoordinatorTest {
 
         Config config = CoordinatorTest.config.withValue(ConfigurationKey.ZOOKEEPER_NODE_PREFIX,
                 ConfigValueFactory.fromAnyRef(""));
-        Coordinator coordinator = new Coordinator(config, factory);
+        Coordinator coordinator = new Coordinator(config);
         coordinator.setZookeeper(zooKeeper);
         coordinator.advertiseSelf("3");
         coordinator.notifyClusterStateChanged();
@@ -103,7 +102,7 @@ public class CoordinatorTest {
     }
 
     //todo fetch all nodes on start
-    //todo test fetching state on cluster change
     //todo test self id on advertise
+    //todo test notifying of children changes
 
 }

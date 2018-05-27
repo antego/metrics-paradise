@@ -2,8 +2,7 @@ package com.github.antego;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.zookeeper.Watcher;
-import org.apache.zookeeper.ZooKeeper;
+import org.apache.zookeeper.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,5 +28,9 @@ public class TestHelper {
             Thread.currentThread().interrupt();
         }
         return zooKeeper;
+    }
+
+    public static void createPath(ZooKeeper zooKeeper, String path) throws KeeperException, InterruptedException {
+        zooKeeper.create(path, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
     }
 }
