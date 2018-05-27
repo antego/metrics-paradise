@@ -1,16 +1,17 @@
-package com.github.antego.api;
+package com.github.antego.storage;
 
 import com.github.antego.cluster.Coordinator;
-import com.github.antego.db.RouterStorage;
-import com.github.antego.db.LocalStorage;
-import com.github.antego.db.Metric;
-import com.github.antego.db.RemoteStorage;
+import com.github.antego.storage.RouterStorage;
+import com.github.antego.storage.LocalStorage;
+import com.github.antego.storage.Metric;
+import com.github.antego.storage.RemoteStorage;
 import org.junit.Test;
 
 import java.sql.SQLException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -23,7 +24,7 @@ public class RouterStorageTest {
 
 
     @Test
-    public void shouldPutIfMetricMatch() throws SQLException {
+    public void shouldPutIfMetricMatch() throws Exception {
         Metric metric = new Metric(10, "name", 0);
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
@@ -33,17 +34,17 @@ public class RouterStorageTest {
     }
 
     @Test
-    public void shouldProxyNotSelfMetric() throws SQLException {
+    public void shouldProxyNotSelfMetric() throws Exception {
         Metric metric = new Metric(10, "name", 0);
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
 
         dispatcher.put(metric);
 
-        verify(remoteStorage).put(metric);
+        verify(remoteStorage).put(eq(metric), any());
     }
 
     @Test
-    public void shouldGetMetricIfMatch() throws SQLException {
+    public void shouldGetMetricIfMatch() throws Exception {
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
         dispatcher.get("metric", 10, 20);
@@ -52,7 +53,7 @@ public class RouterStorageTest {
     }
 
     @Test
-    public void shouldGetMetricIfNoMatch() throws SQLException {
+    public void shouldGetMetricIfNoMatch() throws Exception {
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
 
         dispatcher.get("metric", 10, 20);

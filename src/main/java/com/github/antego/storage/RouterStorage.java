@@ -1,10 +1,13 @@
-package com.github.antego.db;
+package com.github.antego.storage;
 
 import com.github.antego.cluster.Coordinator;
 
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class RouterStorage implements Storage {
     private LocalStorage localStorage;
@@ -19,7 +22,7 @@ public class RouterStorage implements Storage {
     }
 
     @Override
-    public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
+    public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws Exception {
         doRebalanceIfNeeded();
         if (coordinator.isMetricOwnedByNode(name.hashCode())) {
             return localStorage.get(name, timeStartInclusive, timeEndExclusive);
@@ -28,7 +31,7 @@ public class RouterStorage implements Storage {
     }
 
     @Override
-    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
+    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws Exception {
         doRebalanceIfNeeded();
         if (coordinator.isMetricOwnedByNode(name.hashCode())) {
             return localStorage.getMin(name, timeStartInclusive, timeEndExclusive);
@@ -37,16 +40,21 @@ public class RouterStorage implements Storage {
     }
 
     @Override
-    public void put(Metric metric) throws SQLException {
+    public void put(Metric metric) throws Exception {
         doRebalanceIfNeeded();
         if (coordinator.isMetricOwnedByNode(metric.getName().hashCode())) {
             localStorage.put(metric);
             return;
         }
-        remoteStorage.put(metric);
+        URI targetUri = coordinator.getUriOfMetricNode(metric.getName());
+        try {
+            remoteStorage.put(metric, targetUri);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
-    private void doRebalanceIfNeeded() throws SQLException {
+    private void doRebalanceIfNeeded() throws Exception {
         if (isClusterChanged()) {
             rebalance();
         }
@@ -59,12 +67,15 @@ public class RouterStorage implements Storage {
         return changed;
     }
 
-    private void rebalance() throws SQLException {
+    private void rebalance() throws Exception {
         Set<String> metricNames = localStorage.getAllMetricNames();
         for (String name : metricNames) {
             if (!coordinator.isMetricOwnedByNode(name.hashCode())) {
+                URI targetUri = coordinator.getUriOfMetricNode(name);
                 List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
-                metrics.forEach(remoteStorage::put);
+                for (Metric metric : metrics) {
+                    remoteStorage.put(metric, targetUri);
+                }
             }
             localStorage.delete(name);
         }

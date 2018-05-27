@@ -1,4 +1,4 @@
-package com.github.antego.db;
+package com.github.antego.storage;
 
 public class Metric {
     private final long timestamp;

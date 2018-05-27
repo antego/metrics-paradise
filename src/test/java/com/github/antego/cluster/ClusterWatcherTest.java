@@ -1,10 +1,12 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
+import com.github.antego.ConfigurationKey;
 import com.github.antego.cluster.Coordinator;
 import com.github.antego.cluster.ClusterWatcher;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -13,6 +15,8 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.createZookeeperClient;
@@ -45,12 +49,22 @@ public class ClusterWatcherTest {
     @Test
     public void shouldNotifyAboutChildrenNodeChange() throws KeeperException, InterruptedException {
         Coordinator coordinator = mock(Coordinator.class);
-        ClusterWatcher watcher = new ClusterWatcher(coordinator);
+        CountDownLatch latch = new CountDownLatch(1);
+        ClusterWatcher watcher = new ClusterWatcher(coordinator) {
+            @Override
+            public void process(WatchedEvent event) {
+                super.process(event);
+                latch.countDown();
+            }
+        };
 
         createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME));
-        zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
+        List<String> children = zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
         createPath(zookeeperClient, generateRandomNode(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME)));
 
-        verify(coordinator, times(1)).notifyClusterStateChanged();
+        if (children.size() == 0) {
+            latch.await();
+            verify(coordinator, times(1)).notifyClusterStateChanged();
+        }
     }
 }

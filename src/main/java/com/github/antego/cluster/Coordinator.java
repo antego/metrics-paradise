@@ -10,6 +10,7 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,5 +112,9 @@ public class Coordinator implements AutoCloseable {
 
     public int getClusterStateVersion() {
         return clusterStateVersion.get();
+    }
+
+    public URI getUriOfMetricNode(String name) {
+        return null;
     }
 }

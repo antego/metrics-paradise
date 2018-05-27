@@ -1,8 +1,6 @@
-package com.github.antego;
+package com.github.antego.cluster;
 
-import com.github.antego.cluster.Coordinator;
-import com.github.antego.cluster.ClusterWatcher;
-import com.github.antego.cluster.ClusterWatcherFactory;
+import com.github.antego.ConfigurationKey;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;

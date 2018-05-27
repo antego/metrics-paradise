@@ -1,8 +1,8 @@
-package com.github.antego;
+package com.github.antego.api;
 
 import com.github.antego.api.MetricResource;
-import com.github.antego.db.Metric;
-import com.github.antego.db.RouterStorage;
+import com.github.antego.storage.Metric;
+import com.github.antego.storage.RouterStorage;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -32,7 +32,7 @@ public class EndpointTest extends JerseyTest {
     }
 
     @Test
-    public void shouldWriteMetricsFromTsv() throws SQLException {
+    public void shouldWriteMetricsFromTsv() throws Exception {
         int status = target("metrics").request().post(Entity.text("123123\tmetric\t0.5")).getStatus();
         assertEquals(201, status);
         ArgumentCaptor<Metric> captor = ArgumentCaptor.forClass(Metric.class);
@@ -44,7 +44,7 @@ public class EndpointTest extends JerseyTest {
     }
 
     @Test
-    public void shouldRespondWithTsv() throws SQLException {
+    public void shouldRespondWithTsv() throws Exception {
         Metric metric1 = new Metric(1000, "metric1", 4);
         Metric metric2 = new Metric(1001, "metric2", 2);
         when(routerStorage.get(any(), anyLong(), anyLong())).thenReturn(Arrays.asList(metric1, metric2));

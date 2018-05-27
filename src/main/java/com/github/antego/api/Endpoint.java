@@ -1,6 +1,6 @@
 package com.github.antego.api;
 
-import com.github.antego.db.RouterStorage;
+import com.github.antego.storage.RouterStorage;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;

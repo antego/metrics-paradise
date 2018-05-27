@@ -1,4 +1,4 @@
-package com.github.antego.db;
+package com.github.antego.storage;
 
 import com.github.antego.ConfigurationKey;
 import com.typesafe.config.Config;

@@ -1,7 +1,7 @@
 package com.github.antego.api;
 
-import com.github.antego.db.Metric;
-import com.github.antego.db.RouterStorage;
+import com.github.antego.storage.Metric;
+import com.github.antego.storage.RouterStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +18,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.github.antego.Utils.dumpMetricsToTsv;
+import static com.github.antego.Utils.parseTsv;
+
 @Path("/metrics")
 public class MetricResource {
     private static final Logger logger = LoggerFactory.getLogger(MetricResource.class);
@@ -32,14 +35,14 @@ public class MetricResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String getMetricsInTsv(@QueryParam("timestampstart") long timestampStart,
                               @QueryParam("timestampend") long timestampEnd,
-                              @QueryParam("metricname") String metricName) throws SQLException {
+                              @QueryParam("metricname") String metricName) throws Exception {
 
         return dumpMetricsToTsv(routerStorage.get(metricName, timestampStart, timestampEnd));
     }
 
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
-    public Response saveMetricsFromTsv(String tsv) throws SQLException {
+    public Response saveMetricsFromTsv(String tsv) throws Exception {
         List<Metric> metrics;
         try {
             metrics = parseTsv(tsv);
@@ -56,30 +59,4 @@ public class MetricResource {
         }
         return Response.status(Response.Status.CREATED).build();
     }
-
-    private List<Metric> parseTsv(String tsv) {
-        List<Metric> metrics = new ArrayList<>();
-        String[] lines = tsv.split("\n");
-        for (String line : lines) {
-            String[] fields = line.split("\t");
-            long timestamp = Long.valueOf(fields[0]);
-            String name = fields[1];
-            double value = Double.valueOf(fields[2]);
-            Metric metric = new Metric(timestamp, name, value);
-            metrics.add(metric);
-        }
-        return metrics;
-    }
-
-    private String dumpMetricsToTsv(List<Metric> metrics) {
-        StringBuilder builder = new StringBuilder();
-        for (Metric metric : metrics) {
-            builder.append(metric.getTimestamp()).append("\t")
-                    .append(metric.getName()).append("\t")
-                    .append(metric.getValue()).append("\n");
-        }
-        return builder.toString();
-    }
-
-
 }
