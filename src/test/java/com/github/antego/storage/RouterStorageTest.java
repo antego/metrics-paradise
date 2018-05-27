@@ -7,10 +7,12 @@ import com.github.antego.storage.Metric;
 import com.github.antego.storage.RemoteStorage;
 import org.junit.Test;
 
+import java.net.URI;
 import java.sql.SQLException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -21,6 +23,7 @@ public class RouterStorageTest {
     private Coordinator coordinator = mock(Coordinator.class);
     private RemoteStorage remoteStorage = mock(RemoteStorage.class);
     private RouterStorage dispatcher = new RouterStorage(localStorage, coordinator, remoteStorage);
+    private URI uri = URI.create("http://uri");
 
 
     @Test
@@ -55,9 +58,10 @@ public class RouterStorageTest {
     @Test
     public void shouldGetMetricIfNoMatch() throws Exception {
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
+        when(coordinator.getUriOfMetricNode(anyString())).thenReturn(uri);
 
         dispatcher.get("metric", 10, 20);
 
-        verify(remoteStorage).get("metric", 10, 20);
+        verify(remoteStorage).get("metric", 10, 20, uri);
     }
 }

@@ -27,7 +27,8 @@ public class RouterStorage implements Storage {
         if (coordinator.isMetricOwnedByNode(name.hashCode())) {
             return localStorage.get(name, timeStartInclusive, timeEndExclusive);
         }
-        return remoteStorage.get(name, timeStartInclusive, timeEndExclusive);
+        URI targetUri = coordinator.getUriOfMetricNode(name);
+        return remoteStorage.get(name, timeStartInclusive, timeEndExclusive, targetUri);
     }
 
     @Override

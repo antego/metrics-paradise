@@ -8,9 +8,11 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.verify.VerificationTimes;
 
 import java.net.URI;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -35,6 +37,19 @@ public class RemoteStorageTest {
         storage.put(metric, URI.create("http://localhost:" + mockServerRule.getPort()));
 
         mockServerClient.verify(request, VerificationTimes.once());
+    }
+
+    @Test
+    public void shouldSendGet() throws Exception {
+        HttpRequest request = request().withMethod("GET")
+                .withPath("/metrics");
+
+        mockServerClient.when(request).respond(response().withBody("10\tmetric\t456456\n"));
+
+        List<Metric> metrics = storage.get("metric", 0, 12,
+                URI.create("http://localhost:" + mockServerRule.getPort()));
+
+        assertEquals(456456, metrics.get(0).getValue(), .000001);
     }
 
 }
