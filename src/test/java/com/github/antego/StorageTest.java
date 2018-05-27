@@ -27,4 +27,14 @@ public class StorageTest {
         assertEquals(name, metric.get(0).getName());
         assertEquals(value, metric.get(0).getValue(), 0.00001);
     }
+
+    @Test
+    public void shouldReturnMin() throws SQLException {
+        String name = "metric1";
+        storage.put(new Metric(10, name, 4));
+        storage.put(new Metric(11, name, 16));
+
+        double min = storage.getMin(name, 6L, 13L);
+        assertEquals(4, 4, .00000001);
+    }
 }

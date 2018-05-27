@@ -1,6 +1,5 @@
 package com.github.antego;
 
-import com.github.antego.api.Endpoint;
 import com.github.antego.api.MetricResource;
 import com.github.antego.db.Metric;
 import com.github.antego.db.Storage;

@@ -17,12 +17,18 @@ public class Storage {
     private static final String metricTable =
             "create table if not exists metric (timestamp bigint, name varchar, value double)";
     private static final String metricPut = "insert into metric values (?, ?, ?)";
+
+    private static final String BASE_QUERY =
+            "from metric where timestamp >= ? and timestamp < ? and name = ? limit "
+            + config.getInt(ConfigurationKey.DB_RESULT_LIMIT);
     private static final String metricGet =
-            "select * from metric where timestamp >= ? and timestamp < ? and name = ? limit "
-                    + config.getInt(ConfigurationKey.DB_RESULT_LIMIT);
+            "select * " + BASE_QUERY;
+    private static final String metricGetMin =
+            "select min(value) " + BASE_QUERY;
     private final Connection connection;
     private final PreparedStatement putStmt;
     private final PreparedStatement getStmt;
+    private final PreparedStatement getMinStmt;
 
 
     public Storage() throws SQLException {
@@ -31,6 +37,7 @@ public class Storage {
         connection.createStatement().executeUpdate(metricTable);
         putStmt = connection.prepareStatement(metricPut);
         getStmt = connection.prepareStatement(metricGet);
+        getMinStmt = connection.prepareStatement(metricGetMin);
     }
 
 
@@ -45,9 +52,7 @@ public class Storage {
     }
 
     public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        getStmt.setLong(1, timeStartInclusive);
-        getStmt.setLong(2, timeEndExclusive);
-        getStmt.setString(3, name);
+        populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
         ResultSet rs = getStmt.executeQuery();
         List<Metric> metrics = new ArrayList<>();
         while (rs.next()) {
@@ -57,6 +62,18 @@ public class Storage {
             metrics.add(new Metric(timestamp, resultName, value));
         }
         return metrics;
+    }
 
+    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
+        populateBaseQuery(getMinStmt, timeStartInclusive, timeEndExclusive, name);
+        ResultSet rs = getMinStmt.executeQuery();
+        rs.next();
+        return rs.getDouble(1);
+    }
+
+    private void populateBaseQuery(PreparedStatement stmt, long timeStartInclusive, long timeEndExclusive, String name) throws SQLException {
+        stmt.setLong(1, timeStartInclusive);
+        stmt.setLong(2, timeEndExclusive);
+        stmt.setString(3, name);
     }
 }

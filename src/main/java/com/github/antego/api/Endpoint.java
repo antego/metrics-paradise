@@ -13,6 +13,7 @@ public class Endpoint {
     private Server server;
     private Storage storage;
 
+    //todo secure
     public Endpoint(Storage storage) {
         this.storage = storage;
     }
