@@ -2,26 +2,24 @@ package com.github.antego;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.ZooKeeper;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 
 import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.createZookeeperClient;
+import static com.github.antego.TestHelper.generateRandomNode;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class ZookeeperWatcherTest {
+public class RootNodeWatcherTest {
     private static final Config config = ConfigFactory.load();
 
     @ClassRule
@@ -45,14 +43,12 @@ public class ZookeeperWatcherTest {
     @Test
     public void shouldNotifyAboutChildrenNodeChange() throws KeeperException, InterruptedException {
         Coordinator coordinator = mock(Coordinator.class);
-        ZookeeperWatcher watcher = new ZookeeperWatcher(coordinator);
+        RootNodeWatcher watcher = new RootNodeWatcher(coordinator);
 
         createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME));
-        createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX));
         zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
-        createPath(zookeeperClient, config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX) + "1");
-        zookeeperClient.getChildren(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME), watcher);
+        createPath(zookeeperClient, generateRandomNode(config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME)));
 
-        verify(coordinator).notifyClusterStateChanged();
+        verify(coordinator, times(1)).notifyClusterStateChanged();
     }
 }

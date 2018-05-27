@@ -4,38 +4,45 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.apache.zookeeper.KeeperException;
+import org.apache.zookeeper.WatchedEvent;
+import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import static com.github.antego.ConfigurationKey.ZOOKEEPER_NODE_PREFIX;
 import static com.github.antego.ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME;
+import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.createZookeeperClient;
+import static com.github.antego.TestHelper.generateRandomNode;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CoordinatorTest {
-    private static final Logger logger = LoggerFactory.getLogger(CoordinatorTest.class);
-    private static final Config config = ConfigFactory.load();
-
+    private static Config config = ConfigFactory.load();
     private static GenericContainer zookeeperContainer;
     private static int zookeeperPort;
-
     private static ZooKeeper zookeeperClient;
+    private RootNodeWatcherFactory factory = mock(RootNodeWatcherFactory.class);
 
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
@@ -53,31 +60,38 @@ public class CoordinatorTest {
         zookeeperContainer.stop();
     }
 
+    @Before
+    public void testInNewRootNode() {
+        config = config.withValue(ZOOKEEPER_ROOT_NODE_NAME,
+                ConfigValueFactory.fromAnyRef("/" + UUID.randomUUID().toString()));
+    }
+
     @Test
     public void shouldCreateNodeOnStart() throws Exception {
-        try (Coordinator coordinator = new Coordinator(config)) {
-            coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
-            coordinator.init();
+        Coordinator coordinator = new Coordinator(config, factory);
+        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.init();
 
-            Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME), false);
-            assertTrue(stat != null);
-        }
+        Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME), false);
+        assertTrue(stat != null);
     }
 
     @Test
     public void shouldDeleteNodeOnExit() throws Exception {
-        try (Coordinator coordinator = new Coordinator(config)) {
-            coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
-            coordinator.init();
-        }
-        Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_NODE_PREFIX) + "0000000001", false);
+        Coordinator coordinator = new Coordinator(config, factory);
+        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.init();
+        coordinator.advertiseSelf("1");
+        coordinator.close();
+
+        Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME) + "/1", false);
         assertTrue(stat == null);
     }
 
     @Test
     public void shouldSignalAboutChangedClusterState() throws KeeperException, InterruptedException {
         ZooKeeper zooKeeper = mock(ZooKeeper.class);
-        when(zooKeeper.getChildren(any(), anyBoolean()))
+        when(zooKeeper.getChildren(any(), any()))
                 .thenReturn(Arrays.asList("1", "2", "3"))
                 .thenReturn(Arrays.asList("2", "3", "4", "7"));
         when(zooKeeper.getData(anyString(), anyBoolean(), any()))
@@ -85,7 +99,7 @@ public class CoordinatorTest {
 
         Config config = CoordinatorTest.config.withValue(ConfigurationKey.ZOOKEEPER_NODE_PREFIX,
                 ConfigValueFactory.fromAnyRef(""));
-        Coordinator coordinator = new Coordinator(config);
+        Coordinator coordinator = new Coordinator(config, factory);
         coordinator.setZookeeper(zooKeeper);
         coordinator.advertiseSelf("3");
         coordinator.notifyClusterStateChanged();
@@ -98,8 +112,26 @@ public class CoordinatorTest {
         assertTrue(coordinator.isMyKey(29)); // 29 mod 4 = 1
     }
 
+    @Test
+    public void shouldAssignWatcherOnInit() throws Exception {
+        CountDownLatch latch = new CountDownLatch(1); // need to wait till event comes back
+        Coordinator coordinator = new Coordinator(config, factory);
+        RootNodeWatcher watcher = spy(new RootNodeWatcher(coordinator) {
+            @Override
+            public void process(WatchedEvent event) {
+                latch.countDown();
+            }
+        });
+        when(factory.createWatcher(eq(coordinator))).thenReturn(watcher);
+        coordinator.setZookeeper(createZookeeperClient(zookeeperPort));
+        coordinator.init();
+
+        createPath(zookeeperClient, generateRandomNode(config.getString(ZOOKEEPER_ROOT_NODE_NAME)));
+        latch.await(10, TimeUnit.SECONDS);
+        verify(watcher).process(any());
+    }
+
     //todo fetch all nodes on start
     //todo test self id on advertise
-    //todo test notifying of children changes
 
 }

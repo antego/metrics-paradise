@@ -21,19 +21,22 @@ public class Coordinator implements AutoCloseable {
     private final String rootNodeName;
     private final String nodePrefix;
     private final Config config;
+    private final RootNodeWatcherFactory watcherFactory;
     private volatile ZooKeeper zookeeper;
 
     private volatile ClusterState clusterState;
     private String selfId;
 
-    public Coordinator(Config config) {
+    public Coordinator(Config config, RootNodeWatcherFactory watcherFactory) {
         this.config = config;
         rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
         nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
+        this.watcherFactory = watcherFactory;
     }
 
     public void init() throws KeeperException, InterruptedException {
         createRootNodeIfNotExists();
+        refreshClusterState();
     }
 
     @Override
@@ -49,11 +52,11 @@ public class Coordinator implements AutoCloseable {
         if (id == null) {
             id = UUID.randomUUID().toString();
         }
-        String nodeName = nodePrefix + id;
+        String nodePath = rootNodeName + "/" + nodePrefix + id;
         String selfHost = config.getString("host");
         int selfPort = config.getInt("port");
         byte[] nodeData = (selfHost + ":" + selfPort).getBytes(StandardCharsets.UTF_8);
-        zookeeper.create(nodeName, nodeData, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        zookeeper.create(nodePath, nodeData, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
         selfId = id;
     }
 
@@ -66,19 +69,20 @@ public class Coordinator implements AutoCloseable {
         logger.info("Created zookeeper root path {}", resultPath);
     }
 
+    public void notifyClusterStateChanged() throws KeeperException, InterruptedException {
+        refreshClusterState();
+    }
+
     /*
      * This method is called from the zookeeper event thread.
      * No synchronization needed because methods of zookeeper client are thread-safe.
      * Assignment of ClusterState is done to the volatile variable.
      */
-    public void notifyClusterStateChanged() throws KeeperException, InterruptedException {
-        List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, true);
+    public void refreshClusterState() throws KeeperException, InterruptedException {
+        RootNodeWatcher watcher = watcherFactory.createWatcher(this);
+        List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, watcher);
         List<Node> nodes = new ArrayList<>();
         for (String path : newChildrenNodes) {
-            if (!path.startsWith(nodePrefix)) {
-                logger.error("Retrieved path [{}] is not starting with prefix [{}]", path, nodePrefix);
-                continue;
-            }
             String id = path.substring(nodePrefix.length(), path.length());
             byte[] data;
             try {

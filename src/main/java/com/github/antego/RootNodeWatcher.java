@@ -6,12 +6,11 @@ import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ZookeeperWatcher implements Watcher {
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperWatcher.class);
+public class RootNodeWatcher implements Watcher {
+    private final static Logger logger = LoggerFactory.getLogger(RootNodeWatcher.class);
     private Coordinator coordinator;
 
-
-    public ZookeeperWatcher(Coordinator coordinator) {
+    public RootNodeWatcher(Coordinator coordinator) {
         this.coordinator = coordinator;
     }
 
