@@ -2,6 +2,7 @@ package com.github.antego;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigValueFactory;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -84,10 +85,13 @@ public class CoordinatorTest {
                 .thenReturn(Arrays.asList("1", "2", "3"))
                 .thenReturn(Arrays.asList("2", "3", "4", "7"));
         when(zooKeeper.getData(anyString(), anyBoolean(), any()))
-                .thenReturn("host:port".getBytes(StandardCharsets.UTF_8));
+                .thenReturn("host:80".getBytes(StandardCharsets.UTF_8));
 
+        Config config = CoordinatorTest.config.withValue(ConfigurationKey.ZOOKEEPER_NODE_PREFIX,
+                ConfigValueFactory.fromAnyRef(""));
         Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.advertiseSelf();
+        coordinator.setZookeeper(zooKeeper);
+        coordinator.advertiseSelf("3");
         coordinator.notifyClusterStateChanged();
 
         assertTrue(coordinator.isMyKey(2)); // 2 mod 3 = 2

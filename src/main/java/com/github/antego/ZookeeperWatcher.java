@@ -1,5 +1,6 @@
 package com.github.antego;
 
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
@@ -18,7 +19,13 @@ public class ZookeeperWatcher implements Watcher {
     public void process(WatchedEvent event) {
         if (event.getType() == Event.EventType.NodeChildrenChanged) {
             logger.info(event.getState().toString());
-            coordinator.notifyClusterStateChanged();
+            try {
+                coordinator.notifyClusterStateChanged();
+            } catch (KeeperException e) {
+                logger.error("Error", e);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 }

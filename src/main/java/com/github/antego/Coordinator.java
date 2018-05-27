@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.charset.StandardCharsets;
-import java.util.UUID;
+import java.util.*;
 
 
 public class Coordinator implements AutoCloseable {
@@ -20,11 +20,12 @@ public class Coordinator implements AutoCloseable {
     private ZooKeeper zookeeper;
 
     private ClusterState clusterState;
+    private String selfId;
 
     public Coordinator(Config config, ZookeeperWatcherFactory watcherFactory) {
         this.config = config;
-        rootNodeName = config.getString("zookeeper.root.node.name");
-        nodePrefix = config.getString("zookeeper.node.prefix");
+        rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
+        nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
         this.watcherFactory = watcherFactory;
     }
 
@@ -50,6 +51,7 @@ public class Coordinator implements AutoCloseable {
         int selfPort = config.getInt("port");
         byte[] nodeData = (selfHost + ":" + selfPort).getBytes(StandardCharsets.UTF_8);
         zookeeper.create(nodeName, nodeData, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        selfId = id;
     }
 
     private void createRootNodeIfNotExists() throws KeeperException, InterruptedException {
@@ -57,12 +59,34 @@ public class Coordinator implements AutoCloseable {
         if (stat != null) {
             return;
         }
-        String resultPath = zookeeper.create(rootNodeName, new byte[0], ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-
+        String resultPath = zookeeper.create(rootNodeName, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        logger.info("Created zookeeper root path {}", resultPath);
     }
 
-    public void notifyClusterStateChanged() {
-
+    //todo synchronized?
+    public void notifyClusterStateChanged() throws KeeperException, InterruptedException {
+        List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, true);
+        List<Node> nodes = new ArrayList<>();
+        for (String path : newChildrenNodes) {
+            if (!path.startsWith(nodePrefix)) {
+                logger.error("Retrieved path [{}] is not starting with prefix [{}]", path, nodePrefix);
+                continue;
+            }
+            String id = path.substring(nodePrefix.length(), path.length());
+            byte[] data;
+            try {
+                data = zookeeper.getData(path, false, null);
+            } catch (KeeperException.NoNodeException e) {
+                logger.error("Can't retrieve data for node [{}]. Node not found.", e);
+                continue;
+            }
+            String[] hostPort = new String(data, StandardCharsets.UTF_8).split(":");
+            String host = hostPort[0];
+            int port = Integer.valueOf(hostPort[1]);
+            Node node = new Node(id, host, port);
+            nodes.add(node);
+        }
+        clusterState = new ClusterState(nodes, selfId);
     }
 
     public boolean isMyKey(int i) {
