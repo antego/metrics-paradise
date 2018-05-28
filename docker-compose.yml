@@ -14,6 +14,7 @@ services:
       - 8080:8080
     depends_on:
       - zookeeper
+      - graphite
     environment:
       - _JAVA_OPTIONS='-Dzookeeper.host=zookeeper'
 
@@ -22,6 +23,15 @@ services:
     ports:
       - 2003
       - 8090:80
+
+  jmeter:
+    image: justb4/jmeter
+    depends_on:
+      - graphite
+      - metrics-paradise
+    volumes:
+      - ./config/3devices.jmx:/tests/3devices.jmx
+    command: -n -t "/tests/3devices.jmx"
 
 
 
