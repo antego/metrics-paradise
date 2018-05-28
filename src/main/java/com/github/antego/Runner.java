@@ -16,6 +16,7 @@ import java.util.concurrent.CountDownLatch;
 public class Runner {
     public static final Config config = ConfigFactory.load();
 
+    //todo integration test
     public static void main(String[] args) throws Exception {
         ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
         Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
