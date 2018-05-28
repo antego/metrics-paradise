@@ -41,6 +41,7 @@ public class CoordinatorTest {
     private static GenericContainer zookeeperContainer;
     private static int zookeeperPort;
     private static ZooKeeper zookeeperClient;
+    private ZooKeeper zookeeperForCoordinator;
     private ClusterWatcherFactory factory = mock(ClusterWatcherFactory.class);
 
     @BeforeClass
@@ -61,16 +62,17 @@ public class CoordinatorTest {
     }
 
     @Before
-    public void testInNewRootNode() {
+    public void testInNewRootNode() throws IOException {
+        zookeeperForCoordinator = createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperPort)));
         config = config.withValue(ZOOKEEPER_ROOT_NODE_NAME,
                 ConfigValueFactory.fromAnyRef("/" + UUID.randomUUID().toString()));
     }
 
     @Test
-    public void shouldCreateNodeOnStart() throws Exception {
-        Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
-                ConfigValueFactory.fromAnyRef(zookeeperPort))));
+    public void shouldCreateRootNodeOnStart() throws Exception {
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
+
         coordinator.init();
 
         Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME), false);
@@ -79,9 +81,8 @@ public class CoordinatorTest {
 
     @Test
     public void shouldDeleteNodeOnExit() throws Exception {
-        Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
-                ConfigValueFactory.fromAnyRef(zookeeperPort))));
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
+
         coordinator.init();
         coordinator.advertiseSelf("1");
         coordinator.close();
@@ -101,8 +102,7 @@ public class CoordinatorTest {
 
         Config config = CoordinatorTest.config.withValue(ConfigurationKey.ZOOKEEPER_NODE_PREFIX,
                 ConfigValueFactory.fromAnyRef(""));
-        Coordinator coordinator = new Coordinator(config, factory);
-        coordinator.setZookeeper(zooKeeper);
+        Coordinator coordinator = new Coordinator(zooKeeper, config, factory);
         coordinator.advertiseSelf("3");
 
         coordinator.notifyClusterStateChanged();
@@ -117,7 +117,8 @@ public class CoordinatorTest {
     @Test
     public void shouldAssignWatcherOnInit() throws Exception {
         CountDownLatch latch = new CountDownLatch(1); // need to wait till event comes back
-        Coordinator coordinator = new Coordinator(config, factory);
+
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
         ClusterWatcher watcher = spy(new ClusterWatcher(coordinator) {
             @Override
             public void process(WatchedEvent event) {
@@ -125,8 +126,6 @@ public class CoordinatorTest {
             }
         });
         when(factory.createWatcher(eq(coordinator))).thenReturn(watcher);
-        coordinator.setZookeeper(createZookeeperClient(config.withValue(ConfigurationKey.ZOOKEEPER_PORT,
-                ConfigValueFactory.fromAnyRef(zookeeperPort))));
         coordinator.init();
 
         createPath(zookeeperClient, generateRandomNode(config.getString(ZOOKEEPER_ROOT_NODE_NAME)));
@@ -134,7 +133,26 @@ public class CoordinatorTest {
         verify(watcher).process(any());
     }
 
-    //todo fetch all nodes on start
-    //todo test self id on advertise
+    @Test
+    public void shouldRemoveSelf() throws Exception {
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
 
+        coordinator.init();
+        coordinator.advertiseSelf("1");
+        coordinator.removeSelf();
+
+        Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME) + "/node1", false);
+        assertTrue(stat == null);
+    }
+
+    @Test
+    public void shouldCreateSelfNode() throws Exception {
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
+
+        coordinator.init();
+        coordinator.advertiseSelf("1");
+
+        Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME) + "/node1", false);
+        assertTrue(stat != null);
+    }
 }

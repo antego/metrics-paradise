@@ -10,9 +10,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class RouterStorage implements Storage {
-    private LocalStorage localStorage;
-    private Coordinator coordinator;
-    private RemoteStorage remoteStorage;
+    private final LocalStorage localStorage;
+    private final Coordinator coordinator;
+    private final RemoteStorage remoteStorage;
     private int clusterVersion = 0;
 
     public RouterStorage(LocalStorage localStorage, Coordinator coordinator, RemoteStorage remoteStorage) {
@@ -80,5 +80,9 @@ public class RouterStorage implements Storage {
             }
             localStorage.delete(name);
         }
+    }
+
+    public void close() throws Exception {
+        remoteStorage.close();
     }
 }

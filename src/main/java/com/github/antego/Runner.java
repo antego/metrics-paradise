@@ -8,10 +8,8 @@ import com.github.antego.storage.RemoteStorage;
 import com.github.antego.storage.RouterStorage;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 
-import java.io.IOException;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
@@ -19,10 +17,9 @@ public class Runner {
     public static final Config config = ConfigFactory.load();
 
     public static void main(String[] args) throws Exception {
-        Coordinator coordinator = new Coordinator(config, new ClusterWatcherFactory());
-
         ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
-        coordinator.setZookeeper(zooKeeper);
+        Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
+
         coordinator.init();
 
         RouterStorage routerStorage = new RouterStorage(new LocalStorage(), coordinator, new RemoteStorage());

@@ -16,6 +16,7 @@ import java.util.Set;
 
 public class LocalStorage implements Storage {
     private static final Config config = ConfigFactory.load();
+
     private static final String METRIC_TABLE =
             "create table if not exists metric (timestamp bigint, name varchar, value double)";
     private static final String METRIC_PUT = "insert into metric values (?, ?, ?)";
@@ -26,7 +27,9 @@ public class LocalStorage implements Storage {
     private static final String METRIC_GET_MIN = "select min(value) " + BASE_QUERY;
     private static final String GET_METRIC_NAMES = "select distinct name from metric";
     private static final String DELETE_METRICS = "delete from metric where name = ?";
+
     private final Connection connection;
+
     private final PreparedStatement putStmt;
     private final PreparedStatement getStmt;
     private final PreparedStatement getMinStmt;

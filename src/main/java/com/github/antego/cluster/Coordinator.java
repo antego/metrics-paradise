@@ -31,11 +31,12 @@ public class Coordinator implements AutoCloseable {
     private AtomicInteger clusterStateVersion = new AtomicInteger();
     private String selfId;
 
-    public Coordinator(Config config, ClusterWatcherFactory watcherFactory) {
+    public Coordinator(ZooKeeper zooKeeper, Config config, ClusterWatcherFactory watcherFactory) {
         this.config = config;
         rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
         nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
         this.watcherFactory = watcherFactory;
+        this.zookeeper = zooKeeper;
     }
 
     public void init() throws KeeperException, InterruptedException {
@@ -46,10 +47,6 @@ public class Coordinator implements AutoCloseable {
     @Override
     public void close() throws Exception {
         zookeeper.close();
-    }
-
-    public void setZookeeper(ZooKeeper zookeeper) {
-        this.zookeeper = zookeeper;
     }
 
     public void advertiseSelf(String id) throws KeeperException, InterruptedException {
@@ -119,5 +116,10 @@ public class Coordinator implements AutoCloseable {
         String host = node.getHost();
         int port = node.getPort();
         return URI.create("http://" + host + ":" + port);
+    }
+
+    public void removeSelf() throws Exception {
+        String nodePath = rootNodeName + "/" + nodePrefix + selfId;
+        zookeeper.delete(nodePath, -1);
     }
 }
