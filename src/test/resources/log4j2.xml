@@ -9,6 +9,6 @@
         <Root level="warn">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="com.github.antego" level="debug"/>
+        <Logger name="com.github.antego" level="info"/>
     </Loggers>
 </Configuration>

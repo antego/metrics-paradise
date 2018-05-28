@@ -95,7 +95,7 @@ public class Coordinator implements AutoCloseable {
         logger.info("Refreshing cluster state");
         ClusterWatcher watcher = watcherFactory.createWatcher(this);
         List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, watcher);
-        logger.info("Received cluster nodes [{}]", newChildrenNodes.toString());
+        logger.info("Received cluster nodes {}", newChildrenNodes.toString());
         List<Node> nodes = new ArrayList<>();
         for (String path : newChildrenNodes) {
             String id = path.substring(nodePrefix.length(), path.length());
