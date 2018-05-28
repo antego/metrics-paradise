@@ -33,5 +33,18 @@ services:
       - ./config/20k-10thread.jmx:/tests/3devices.jmx
     command: -n -t "/tests/3devices.jmx"
 
+  grafana:
+    image: grafana/grafana
+    environment:
+      - GF_LOG_LEVEL=warn
+    ports:
+     - 3000:3000
+    depends_on:
+      - graphite
+    volumes:
+      - ./config/graphite.yaml:/etc/grafana/provisioning/datasources/graphite.yaml
+      - ./config/dbprovider.yaml:/etc/grafana/provisioning/dashboards/dbprovider.yaml
+      - ./config/jmeter-dashboard.json:/var/lib/grafana/dashboards/jmeter-dashboard.json
+
 
 
