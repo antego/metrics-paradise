@@ -27,6 +27,7 @@ public class MetricResource {
 
     @Inject
     public MetricResource(MetricRouter metricRouter, CountDownLatch shutdown) {
+        logger.info("Initializing Metric Resource");
         this.metricRouter = metricRouter;
         this.shutdown = shutdown;
     }

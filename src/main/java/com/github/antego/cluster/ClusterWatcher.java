@@ -16,8 +16,8 @@ public class ClusterWatcher implements Watcher {
 
     @Override
     public void process(WatchedEvent event) {
+        logger.debug("Received new event [{}]", event.getType());
         if (event.getType() == Event.EventType.NodeChildrenChanged) {
-            logger.info(event.getState().toString());
             try {
                 coordinator.refreshClusterState();
             } catch (KeeperException e) {

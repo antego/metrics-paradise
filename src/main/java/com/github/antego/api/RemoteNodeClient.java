@@ -8,6 +8,8 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.sql.SQLException;
@@ -16,9 +18,11 @@ import java.util.List;
 import static com.github.antego.Utils.dumpMetricToTsv;
 
 public class RemoteNodeClient implements AutoCloseable {
-    HttpClient httpClient = new HttpClient();
+    private final static Logger logger = LoggerFactory.getLogger(RemoteNodeClient.class);
+    private final HttpClient httpClient = new HttpClient();
 
     public RemoteNodeClient() throws Exception {
+        logger.info("Creating remote node client");
         httpClient.start();
     }
 
@@ -47,6 +51,7 @@ public class RemoteNodeClient implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
+        logger.info("Stopping remote node client");
         httpClient.stop();
     }
 }

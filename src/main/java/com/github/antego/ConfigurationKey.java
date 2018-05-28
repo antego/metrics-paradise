@@ -14,4 +14,5 @@ public class ConfigurationKey {
     public static final String ADVERTISE_PORT = "advertise.port";
 
     public static final String ZOOKEEPER_SESSION_TIMEOUT_MS = "zookeeper.session.timeout.ms";
+    public static final String ZOOKEEPER_NODE_RANDOM_ID = "zookeeper.node.random.id";
 }

@@ -63,6 +63,18 @@ public class IntegrationTest {
         new Thread(() -> new Runner().start(config)).start();
 
         String host = "http://localhost:8080";
+
+        waitTillStart(host);
+
+        Metric metric = new Metric(20, "metric", 4);
+        storage.put(metric, URI.create(host));
+        List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
+
+        assertEquals(metric.getValue(), metrics.get(0).getValue(), .00001);
+        client.newRequest(host).path("/shutdown").method(HttpMethod.POST).send();
+    }
+
+    private void waitTillStart(String host) throws Exception {
         Response response = null;
         for (int i = 0; i < 5; i++) {
             try {
@@ -75,13 +87,6 @@ public class IntegrationTest {
             fail();
         }
         assertEquals(200, response.getStatus());
-
-        Metric metric = new Metric(20, "metric", 4);
-        storage.put(metric, URI.create(host));
-        List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
-
-        assertEquals(metric.getValue(), metrics.get(0).getValue(), .00001);
-        client.newRequest(host).path("/shutdown").method(HttpMethod.POST).send();
     }
 
 
