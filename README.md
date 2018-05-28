@@ -45,3 +45,13 @@ echo -ne '2018-01-01 12:13:45\tmetricname\t13.5\n' | POST 'http://default:passwo
 
 GET 'http://default:password@localhost:8123/?query=SELECT * FROM MetricReplicated'
 ```
+
+# Second approach
+
+## Performance testing
+
+200 000 metrics has size of 5MB on a file system. It's a size of a database file after Jmeter run with 20k-10thread.jmx test plan.
+
+Single instance consumes 200k metrics from 10 client at a rate of 6k RPS.
+
+Select queries processed at a rate of 5 RPS on a set of 200k metrics.
