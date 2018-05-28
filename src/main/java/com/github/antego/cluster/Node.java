@@ -18,6 +18,9 @@ public class Node {
     }
 
     public static Node fromIdAndData(String id, byte[] data) {
+        if (data == null) {
+            throw new NullPointerException("Data is null");
+        }
         String[] hostPort = new String(data, StandardCharsets.UTF_8).split(":");
         String host = hostPort[0];
         int port = Integer.valueOf(hostPort[1]);

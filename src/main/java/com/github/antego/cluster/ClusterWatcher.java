@@ -19,7 +19,7 @@ public class ClusterWatcher implements Watcher {
         if (event.getType() == Event.EventType.NodeChildrenChanged) {
             logger.info(event.getState().toString());
             try {
-                coordinator.notifyClusterStateChanged();
+                coordinator.refreshClusterState();
             } catch (KeeperException e) {
                 logger.error("Error", e);
             } catch (InterruptedException e) {

@@ -1,8 +1,6 @@
 package com.github.antego.cluster;
 
 import com.github.antego.ConfigurationKey;
-import com.github.antego.cluster.Coordinator;
-import com.github.antego.cluster.ClusterWatcher;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -66,7 +64,7 @@ public class ClusterWatcherTest {
 
         if (children.size() == 0) {
             latch.await();
-            verify(coordinator, times(1)).notifyClusterStateChanged();
+            verify(coordinator, times(1)).refreshClusterState();
         }
     }
 }

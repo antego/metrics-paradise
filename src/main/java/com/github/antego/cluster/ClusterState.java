@@ -16,16 +16,12 @@ public class ClusterState {
         this.nodes = nodes;
     }
 
-    public int getNumberOfInstances() {
-        return numberOfInstances;
-    }
-
-    public int getSelfIndex() {
-        return selfIndex;
-    }
-
     public Node getNodeByMetric(int metricHash) {
         int index = metricHash % numberOfInstances;
         return nodes.get(index);
+    }
+
+    public boolean isMetricOwnedByNode(int metricHashCode) {
+        return metricHashCode % numberOfInstances == selfIndex;
     }
 }

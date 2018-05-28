@@ -19,7 +19,6 @@ public class Runner {
     public static void main(String[] args) throws Exception {
         ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
         Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
-
         coordinator.init();
 
         RouterStorage routerStorage = new RouterStorage(new LocalStorage(), coordinator, new RemoteStorage());
@@ -31,7 +30,9 @@ public class Runner {
         endpoint.start();
 
         coordinator.advertiseSelf(UUID.randomUUID().toString());
+
         shutdown.await();
+
         endpoint.stop();
 
         coordinator.removeSelf();

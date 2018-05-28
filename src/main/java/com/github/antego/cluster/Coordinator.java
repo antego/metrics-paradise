@@ -74,10 +74,6 @@ public class Coordinator implements AutoCloseable {
         logger.info("Created zookeeper root path {}", resultPath);
     }
 
-    public void notifyClusterStateChanged() throws KeeperException, InterruptedException {
-        refreshClusterState();
-    }
-
     /*
      * This method is called from the zookeeper event thread.
      * No synchronization needed because methods of zookeeper client are thread-safe.
@@ -91,7 +87,7 @@ public class Coordinator implements AutoCloseable {
             String id = path.substring(nodePrefix.length(), path.length());
             byte[] data;
             try {
-                data = zookeeper.getData(path, false, null);
+                data = zookeeper.getData(rootNodeName + "/" + path, false, null);
             } catch (KeeperException.NoNodeException e) {
                 logger.error("Can't retrieve data for node [{}]. Node not found.", e);
                 continue;
@@ -104,7 +100,7 @@ public class Coordinator implements AutoCloseable {
     }
 
     public boolean isMetricOwnedByNode(int metricHashCode) {
-        return metricHashCode % clusterState.getNumberOfInstances() == clusterState.getSelfIndex();
+        return clusterState.isMetricOwnedByNode(metricHashCode);
     }
 
     public int getClusterStateVersion() {

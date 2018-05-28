@@ -25,6 +25,7 @@ import static com.github.antego.ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME;
 import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.generateRandomNode;
 import static com.github.antego.Utils.createZookeeperClient;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -92,45 +93,25 @@ public class CoordinatorTest {
     }
 
     @Test
-    public void shouldSignalAboutChangedClusterState() throws KeeperException, InterruptedException {
-        ZooKeeper zooKeeper = mock(ZooKeeper.class);
-        when(zooKeeper.getChildren(any(), any()))
-                .thenReturn(Arrays.asList("1", "2", "3"))
-                .thenReturn(Arrays.asList("2", "3", "4", "7"));
-        when(zooKeeper.getData(anyString(), anyBoolean(), any()))
-                .thenReturn("host:80".getBytes(StandardCharsets.UTF_8));
-
-        Config config = CoordinatorTest.config.withValue(ConfigurationKey.ZOOKEEPER_NODE_PREFIX,
-                ConfigValueFactory.fromAnyRef(""));
-        Coordinator coordinator = new Coordinator(zooKeeper, config, factory);
-        coordinator.advertiseSelf("3");
-
-        coordinator.notifyClusterStateChanged();
-        assertTrue(coordinator.isMetricOwnedByNode(2)); // 2 mod 3 = 2
-        assertTrue(coordinator.isMetricOwnedByNode(20)); // 20 mod 3 = 2
-
-        coordinator.notifyClusterStateChanged();
-        assertFalse(coordinator.isMetricOwnedByNode(18)); // 18 mod 4 = 2
-        assertTrue(coordinator.isMetricOwnedByNode(29)); // 29 mod 4 = 1
-    }
-
-    @Test
     public void shouldAssignWatcherOnInit() throws Exception {
         CountDownLatch latch = new CountDownLatch(1); // need to wait till event comes back
 
-        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
-        ClusterWatcher watcher = spy(new ClusterWatcher(coordinator) {
+        Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, new ClusterWatcherFactory() {
             @Override
-            public void process(WatchedEvent event) {
-                latch.countDown();
+            public ClusterWatcher createWatcher(Coordinator coordinator) {
+                return spy(new ClusterWatcher(coordinator) {
+                    @Override
+                    public void process(WatchedEvent event) {
+                        latch.countDown();
+                    }
+                });
             }
         });
-        when(factory.createWatcher(eq(coordinator))).thenReturn(watcher);
         coordinator.init();
 
         createPath(zookeeperClient, generateRandomNode(config.getString(ZOOKEEPER_ROOT_NODE_NAME)));
         latch.await(10, TimeUnit.SECONDS);
-        verify(watcher).process(any());
+        assertEquals(0L, latch.getCount());
     }
 
     @Test
