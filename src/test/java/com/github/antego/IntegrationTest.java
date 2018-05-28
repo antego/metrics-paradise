@@ -104,6 +104,46 @@ public class IntegrationTest {
         instance2.shutdown();
     }
 
+    @Test
+    public void shouldSendMetricsOnShutdown() throws Exception {
+        Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
+
+        Config config1 = config.withValue(ConfigurationKey.JETTY_PORT, ConfigValueFactory.fromAnyRef(8080))
+                .withValue(ConfigurationKey.ADVERTISE_PORT, ConfigValueFactory.fromAnyRef(8080));
+        Config config2 = config.withValue(ConfigurationKey.JETTY_PORT, ConfigValueFactory.fromAnyRef(8081))
+                .withValue(ConfigurationKey.ADVERTISE_PORT, ConfigValueFactory.fromAnyRef(8081));
+
+        String host1 = "http://localhost:8080";
+        String host2 = "http://localhost:8081";
+        Instance instance1 = new Instance(host1, config1);
+        Instance instance2 = new Instance(host2, config2);
+        instance1.waitAvailable();
+        instance2.waitAvailable();
+
+        Metric metric1 = new Metric(20, "metric1", 4);
+        Metric metric2 = new Metric(20, "metric2", 4);
+        Metric metric3 = new Metric(20, "metric3", 4);
+        Metric metric4 = new Metric(20, "metric4", 4);
+        Metric metric5 = new Metric(20, "metric5", 4);
+        storage.put(metric1, URI.create(host1));
+        storage.put(metric2, URI.create(host1));
+        storage.put(metric3, URI.create(host1));
+        storage.put(metric4, URI.create(host1));
+        storage.put(metric5, URI.create(host1));
+        instance1.shutdown();
+
+        List<Metric> metrics = storage.get("metric1", 10, 21, URI.create(host2));
+        metrics.addAll(storage.get("metric2", 10, 21, URI.create(host2)));
+        metrics.addAll(storage.get("metric3", 10, 21, URI.create(host2)));
+        metrics.addAll(storage.get("metric4", 10, 21, URI.create(host2)));
+        metrics.addAll(storage.get("metric5", 10, 21, URI.create(host2)));
+
+        assertEquals(5, metrics.size());
+
+        instance2.shutdown();
+    }
+
     private class Instance {
         private final String host;
         private final CountDownLatch endpointLatch = new CountDownLatch(1);

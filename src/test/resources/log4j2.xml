@@ -6,10 +6,9 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="warn">
             <AppenderRef ref="Console"/>
         </Root>
-        <Logger name="org.apache.zookeeper" level="warn"/>
-        <Logger name="org.eclipse.jetty.server" level="warn"/>
+        <Logger name="com.github.antego" level="debug"/>
     </Loggers>
 </Configuration>

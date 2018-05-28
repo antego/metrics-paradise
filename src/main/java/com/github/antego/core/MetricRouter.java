@@ -32,7 +32,7 @@ public class MetricRouter {
         URI targetUri;
         doRebalanceIfNeeded();
         synchronized (lock) {
-            if (state.isMetricOwnedByNode(name.hashCode())) {
+            if (state.isMetricOwnedByMe(name.hashCode())) {
                 return localStorage.get(name, timeStartInclusive, timeEndExclusive);
             }
             targetUri = state.getUriOfMetricNode(name);
@@ -43,7 +43,7 @@ public class MetricRouter {
     public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws Exception {
         doRebalanceIfNeeded();
         synchronized (lock) {
-            if (state.isMetricOwnedByNode(name.hashCode())) {
+            if (state.isMetricOwnedByMe(name.hashCode())) {
                 return localStorage.getMin(name, timeStartInclusive, timeEndExclusive);
             }
         }
@@ -54,7 +54,7 @@ public class MetricRouter {
         URI targetUri;
         doRebalanceIfNeeded();
         synchronized (lock) {
-            if (state.isMetricOwnedByNode(metric.getName().hashCode())) {
+            if (state.isMetricOwnedByMe(metric.getName().hashCode())) {
                 localStorage.put(metric);
                 return;
             }
@@ -84,18 +84,20 @@ public class MetricRouter {
         return false;
     }
 
+    //todo rebalancer thread
     private void rebalance() throws Exception {
         logger.info("Rebalancing metrics");
         Set<String> metricNames = localStorage.getAllMetricNames();
         for (String name : metricNames) {
-            if (!state.isMetricOwnedByNode(name.hashCode())) {
+            if (!state.isMetricOwnedByMe(name.hashCode())) {
                 URI targetUri = state.getUriOfMetricNode(name);
+                logger.debug("Rebalancing metric with name [{}] to node [{}]", name, targetUri);
                 List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
                 for (Metric metric : metrics) {
                     remoteNodeClient.put(metric, targetUri);
                 }
+                localStorage.delete(name);
             }
-            localStorage.delete(name);
         }
     }
 

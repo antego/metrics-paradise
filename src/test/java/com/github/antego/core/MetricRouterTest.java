@@ -31,7 +31,7 @@ public class MetricRouterTest {
     @Test
     public void shouldPutIfMetricMatch() throws Exception {
         Metric metric = new Metric(10, "name", 0);
-        when(state.isMetricOwnedByNode(anyInt())).thenReturn(true);
+        when(state.isMetricOwnedByMe(anyInt())).thenReturn(true);
 
         router.put(metric);
 
@@ -41,7 +41,7 @@ public class MetricRouterTest {
     @Test
     public void shouldProxyNotSelfMetric() throws Exception {
         Metric metric = new Metric(10, "name", 0);
-        when(state.isMetricOwnedByNode(anyInt())).thenReturn(false);
+        when(state.isMetricOwnedByMe(anyInt())).thenReturn(false);
 
         router.put(metric);
 
@@ -50,7 +50,7 @@ public class MetricRouterTest {
 
     @Test
     public void shouldGetMetricIfMatch() throws Exception {
-        when(state.isMetricOwnedByNode(anyInt())).thenReturn(true);
+        when(state.isMetricOwnedByMe(anyInt())).thenReturn(true);
 
         router.get("metric", 10, 20);
 
@@ -59,7 +59,7 @@ public class MetricRouterTest {
 
     @Test
     public void shouldGetMetricIfNoMatch() throws Exception {
-        when(state.isMetricOwnedByNode(anyInt())).thenReturn(false);
+        when(state.isMetricOwnedByMe(anyInt())).thenReturn(false);
         when(state.getUriOfMetricNode(anyString())).thenReturn(uri);
 
         router.get("metric", 10, 20);

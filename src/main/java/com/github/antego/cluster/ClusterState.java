@@ -23,7 +23,7 @@ public class ClusterState {
         return nodes.get(index);
     }
 
-    public boolean isMetricOwnedByNode(int metricHashCode) {
+    public boolean isMetricOwnedByMe(int metricHashCode) {
         if (numberOfInstances == 0) {
             return true;
         }
