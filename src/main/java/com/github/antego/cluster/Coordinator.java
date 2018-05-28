@@ -26,11 +26,10 @@ public class Coordinator implements AutoCloseable {
     private final String nodePrefix;
     private final Config config;
     private final ClusterWatcherFactory watcherFactory;
-    private volatile ZooKeeper zookeeper;
+    private final ZooKeeper zookeeper;
 
     private volatile ClusterState clusterState;
-    private AtomicInteger clusterStateVersion = new AtomicInteger();
-    private String selfId;
+    private volatile String selfId;
 
     public Coordinator(ZooKeeper zooKeeper, Config config, ClusterWatcherFactory watcherFactory) {
         logger.info("Creating Coordinator");
@@ -111,7 +110,6 @@ public class Coordinator implements AutoCloseable {
             nodes.add(node);
         }
         clusterState = new ClusterState(nodes, selfId);
-        clusterStateVersion.incrementAndGet();
     }
 
     public void removeSelf() throws Exception {
