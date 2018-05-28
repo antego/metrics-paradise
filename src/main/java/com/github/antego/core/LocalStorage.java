@@ -1,4 +1,4 @@
-package com.github.antego.storage;
+package com.github.antego.core;
 
 import com.github.antego.ConfigurationKey;
 import com.typesafe.config.Config;
@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LocalStorage implements Storage {
+public class LocalStorage {
     private static final Config config = ConfigFactory.load();
 
     private static final String METRIC_TABLE =
@@ -40,7 +40,9 @@ public class LocalStorage implements Storage {
     public LocalStorage() throws SQLException {
         String url = config.getString(ConfigurationKey.DB_H2_URL);
         connection = DriverManager.getConnection(url);
+
         connection.createStatement().executeUpdate(METRIC_TABLE);
+
         putStmt = connection.prepareStatement(METRIC_PUT);
         getStmt = connection.prepareStatement(METRIC_GET);
         getMinStmt = connection.prepareStatement(METRIC_GET_MIN);
@@ -52,7 +54,6 @@ public class LocalStorage implements Storage {
     //todo synchronized?
     //todo index
     //todo aggreagate queries
-    @Override
     public void put(Metric metric) throws SQLException {
         putStmt.setLong(1, metric.getTimestamp());
         putStmt.setString(2, metric.getName());
@@ -60,7 +61,6 @@ public class LocalStorage implements Storage {
         putStmt.execute();
     }
 
-    @Override
     public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
         populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
         ResultSet rs = getStmt.executeQuery();
@@ -74,7 +74,6 @@ public class LocalStorage implements Storage {
         return metrics;
     }
 
-    @Override
     public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
         populateBaseQuery(getMinStmt, timeStartInclusive, timeEndExclusive, name);
         ResultSet rs = getMinStmt.executeQuery();

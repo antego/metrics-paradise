@@ -1,6 +1,6 @@
 package com.github.antego;
 
-import com.github.antego.storage.Metric;
+import com.github.antego.core.Metric;
 import com.typesafe.config.Config;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;

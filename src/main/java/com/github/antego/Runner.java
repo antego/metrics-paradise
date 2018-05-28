@@ -3,9 +3,9 @@ package com.github.antego;
 import com.github.antego.api.Endpoint;
 import com.github.antego.cluster.ClusterWatcherFactory;
 import com.github.antego.cluster.Coordinator;
-import com.github.antego.storage.LocalStorage;
-import com.github.antego.storage.RemoteStorage;
-import com.github.antego.storage.RouterStorage;
+import com.github.antego.core.LocalStorage;
+import com.github.antego.api.RemoteNodeClient;
+import com.github.antego.core.MetricRouter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.zookeeper.ZooKeeper;
@@ -28,12 +28,12 @@ public class Runner {
             Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
             coordinator.init();
 
-            RouterStorage routerStorage = new RouterStorage(new LocalStorage(), coordinator, new RemoteStorage());
+            MetricRouter metricRouter = new MetricRouter(new LocalStorage(), coordinator, new RemoteNodeClient());
 
-            routerStorage.doRebalanceIfNeeded();
+            metricRouter.doRebalanceIfNeeded();
 
             CountDownLatch shutdown = new CountDownLatch(1);
-            Endpoint endpoint = new Endpoint(routerStorage, shutdown);
+            Endpoint endpoint = new Endpoint(metricRouter, shutdown);
             endpoint.start();
 
             coordinator.advertiseSelf(UUID.randomUUID().toString());
@@ -44,8 +44,8 @@ public class Runner {
 
             coordinator.removeSelf();
 
-            routerStorage.doRebalanceIfNeeded();
-            routerStorage.close();
+            metricRouter.doRebalanceIfNeeded();
+            metricRouter.close();
             coordinator.close();
         } catch (Exception e) {
             logger.error("Exception in runner", e);

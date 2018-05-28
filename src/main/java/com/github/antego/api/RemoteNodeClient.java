@@ -1,7 +1,8 @@
-package com.github.antego.storage;
+package com.github.antego.api;
 
 
 import com.github.antego.Utils;
+import com.github.antego.core.Metric;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Response;
@@ -11,15 +12,13 @@ import org.eclipse.jetty.http.HttpMethod;
 import java.net.URI;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static com.github.antego.Utils.dumpMetricToTsv;
 
-public class RemoteStorage implements AutoCloseable {
+public class RemoteNodeClient implements AutoCloseable {
     HttpClient httpClient = new HttpClient();
 
-    public RemoteStorage() throws Exception {
+    public RemoteNodeClient() throws Exception {
         httpClient.start();
     }
 

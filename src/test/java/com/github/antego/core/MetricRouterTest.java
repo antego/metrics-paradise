@@ -1,14 +1,10 @@
-package com.github.antego.storage;
+package com.github.antego.core;
 
+import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.cluster.Coordinator;
-import com.github.antego.storage.RouterStorage;
-import com.github.antego.storage.LocalStorage;
-import com.github.antego.storage.Metric;
-import com.github.antego.storage.RemoteStorage;
 import org.junit.Test;
 
 import java.net.URI;
-import java.sql.SQLException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -18,11 +14,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class RouterStorageTest {
+public class MetricRouterTest {
     private LocalStorage localStorage = mock(LocalStorage.class);
     private Coordinator coordinator = mock(Coordinator.class);
-    private RemoteStorage remoteStorage = mock(RemoteStorage.class);
-    private RouterStorage dispatcher = new RouterStorage(localStorage, coordinator, remoteStorage);
+    private RemoteNodeClient remoteNodeClient = mock(RemoteNodeClient.class);
+    private MetricRouter router = new MetricRouter(localStorage, coordinator, remoteNodeClient);
     private URI uri = URI.create("http://uri");
 
 
@@ -31,7 +27,7 @@ public class RouterStorageTest {
         Metric metric = new Metric(10, "name", 0);
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
-        dispatcher.put(metric);
+        router.put(metric);
 
         verify(localStorage).put(metric);
     }
@@ -41,16 +37,16 @@ public class RouterStorageTest {
         Metric metric = new Metric(10, "name", 0);
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
 
-        dispatcher.put(metric);
+        router.put(metric);
 
-        verify(remoteStorage).put(eq(metric), any());
+        verify(remoteNodeClient).put(eq(metric), any());
     }
 
     @Test
     public void shouldGetMetricIfMatch() throws Exception {
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
-        dispatcher.get("metric", 10, 20);
+        router.get("metric", 10, 20);
 
         verify(localStorage).get("metric", 10, 20);
     }
@@ -60,8 +56,8 @@ public class RouterStorageTest {
         when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
         when(coordinator.getUriOfMetricNode(anyString())).thenReturn(uri);
 
-        dispatcher.get("metric", 10, 20);
+        router.get("metric", 10, 20);
 
-        verify(remoteStorage).get("metric", 10, 20, uri);
+        verify(remoteNodeClient).get("metric", 10, 20, uri);
     }
 }

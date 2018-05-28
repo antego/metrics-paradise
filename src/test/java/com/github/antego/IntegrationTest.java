@@ -1,13 +1,12 @@
 package com.github.antego;
 
-import com.github.antego.storage.Metric;
-import com.github.antego.storage.RemoteStorage;
+import com.github.antego.core.Metric;
+import com.github.antego.api.RemoteNodeClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.Response;
-import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,7 +26,7 @@ import static org.junit.Assert.fail;
 
 public class IntegrationTest {
     private static GenericContainer zookeeperContainer;
-    private RemoteStorage storage = new RemoteStorage();
+    private RemoteNodeClient storage = new RemoteNodeClient();
     private HttpClient client = new HttpClient();
 
     public IntegrationTest() throws Exception {
@@ -82,7 +81,10 @@ public class IntegrationTest {
         List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
 
         assertEquals(metric.getValue(), metrics.get(0).getValue(), .00001);
+        client.newRequest(host).path("/shutdown").method(HttpMethod.POST).send();
     }
+
+
 
 
 }

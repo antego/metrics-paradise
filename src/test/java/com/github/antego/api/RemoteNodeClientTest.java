@@ -1,5 +1,7 @@
-package com.github.antego.storage;
+package com.github.antego.api;
 
+import com.github.antego.api.RemoteNodeClient;
+import com.github.antego.core.Metric;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
@@ -10,20 +12,18 @@ import org.mockserver.verify.VerificationTimes;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
-public class RemoteStorageTest {
-    private RemoteStorage storage = new RemoteStorage();
+public class RemoteNodeClientTest {
+    private RemoteNodeClient storage = new RemoteNodeClient();
     @Rule
     public MockServerRule mockServerRule = new MockServerRule(this);
     private MockServerClient mockServerClient;
 
-    public RemoteStorageTest() throws Exception {
+    public RemoteNodeClientTest() throws Exception {
     }
 
     @Test

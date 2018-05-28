@@ -1,7 +1,5 @@
-package com.github.antego.storage;
+package com.github.antego.core;
 
-import com.github.antego.storage.LocalStorage;
-import com.github.antego.storage.Metric;
 import org.junit.Test;
 
 import java.sql.SQLException;
