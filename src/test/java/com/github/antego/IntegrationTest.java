@@ -64,8 +64,7 @@ public class IntegrationTest {
 
         String host = "http://localhost:8080";
         Instance instance1 = new Instance(host, config);
-
-        waitTillStart(host);
+        instance1.waitAvailable();
 
         Metric metric = new Metric(20, "metric", 4);
         storage.put(metric, URI.create(host));
@@ -75,19 +74,34 @@ public class IntegrationTest {
         instance1.shutdown();
     }
 
-    private void waitTillStart(String host) throws Exception {
-        Response response = null;
-        for (int i = 0; i < 5; i++) {
-            try {
-                response = client.newRequest(host).path("/check").timeout(10, TimeUnit.SECONDS).method(HttpMethod.GET).send();
-            } catch (ExecutionException e) {
-                Thread.sleep(5000);
-            }
-        }
-        if (response == null) {
-            fail();
-        }
-        assertEquals(200, response.getStatus());
+    @Test
+    public void shouldWriteAndReadAcrossInstances() throws Exception {
+        Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
+                ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
+
+        Config config1 = config.withValue(ConfigurationKey.JETTY_PORT, ConfigValueFactory.fromAnyRef(8080))
+                .withValue(ConfigurationKey.ADVERTISE_PORT, ConfigValueFactory.fromAnyRef(8080));
+        Config config2 = config.withValue(ConfigurationKey.JETTY_PORT, ConfigValueFactory.fromAnyRef(8081))
+                .withValue(ConfigurationKey.ADVERTISE_PORT, ConfigValueFactory.fromAnyRef(8081));
+
+        String host1 = "http://localhost:8080";
+        String host2 = "http://localhost:8081";
+        Instance instance1 = new Instance(host1, config1);
+        Instance instance2 = new Instance(host2, config2);
+        instance1.waitAvailable();
+        instance2.waitAvailable();
+
+        Metric metric1 = new Metric(20, "metric1", 4);
+        Metric metric2 = new Metric(20, "metric2", 4);
+        storage.put(metric1, URI.create(host1));
+        storage.put(metric2, URI.create(host2));
+        List<Metric> metrics = storage.get("metric1", 10, 21, URI.create(host2));
+        assertEquals(metric1.getValue(), metrics.get(0).getValue(), .00001);
+        metrics = storage.get("metric2", 10, 21, URI.create(host1));
+        assertEquals(metric2.getValue(), metrics.get(0).getValue(), .00001);
+
+        instance1.shutdown();
+        instance2.shutdown();
     }
 
     private class Instance {
@@ -100,6 +114,21 @@ public class IntegrationTest {
                 new Runner().start(config);
                 endpointLatch.countDown();
             }).start();
+        }
+
+        public void waitAvailable() throws Exception {
+            Response response = null;
+            for (int i = 0; i < 5; i++) {
+                try {
+                    response = client.newRequest(host).path("/check").timeout(10, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+                } catch (ExecutionException e) {
+                    Thread.sleep(5000);
+                }
+            }
+            if (response == null) {
+                fail();
+            }
+            assertEquals(200, response.getStatus());
         }
 
         public void shutdown() throws InterruptedException, ExecutionException, TimeoutException {

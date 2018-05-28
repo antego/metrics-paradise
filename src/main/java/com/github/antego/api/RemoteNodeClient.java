@@ -40,6 +40,7 @@ public class RemoteNodeClient implements AutoCloseable {
                 .param("timestampstart", String.valueOf(startTime))
                 .param("timestampend", String.valueOf(endTime))
                 .param("metricname", metric)
+                .accept("text/plain")
                 .path("/metrics").send();
         String tsv = response.getContentAsString();
         return Utils.parseTsv(tsv);

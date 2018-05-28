@@ -10,7 +10,7 @@ public class ConfigurationKey {
     public static final String DB_RESULT_LIMIT = "db.result.limit";
     public static final String JETTY_HOST = "jetty.host";
     public static final String JETTY_PORT = "jetty.port";
-    public static final String ADVERTISE_HOST = "advertise.port";
+    public static final String ADVERTISE_HOST = "advertise.host";
     public static final String ADVERTISE_PORT = "advertise.port";
 
     public static final String ZOOKEEPER_SESSION_TIMEOUT_MS = "zookeeper.session.timeout.ms";

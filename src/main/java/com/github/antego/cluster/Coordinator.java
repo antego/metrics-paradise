@@ -76,11 +76,15 @@ public class Coordinator implements AutoCloseable {
         logger.info("Checking root path");
         Stat stat = zookeeper.exists(rootNodeName, false);
         if (stat != null) {
-            logger.info("Root path already created. Skipping.");
+            logger.info("Root path already created. Skipping");
             return;
         }
-        String resultPath = zookeeper.create(rootNodeName, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        logger.info("No root path found. Created zookeeper root path at [{}]", resultPath);
+        try {
+            String resultPath = zookeeper.create(rootNodeName, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+            logger.info("No root path found. Created zookeeper root path at [{}]", resultPath);
+        } catch (KeeperException.NodeExistsException e) {
+            logger.info("Tried to create root path. Root path have been already created");
+        }
     }
 
     /*

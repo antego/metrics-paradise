@@ -33,7 +33,7 @@ public class Runner {
             metricRouter.doRebalanceIfNeeded();
 
             CountDownLatch shutdown = new CountDownLatch(1);
-            Endpoint endpoint = new Endpoint(metricRouter, shutdown);
+            Endpoint endpoint = new Endpoint(metricRouter, shutdown, config);
             endpoint.start();
 
             coordinator.advertiseSelf(UUID.randomUUID().toString());

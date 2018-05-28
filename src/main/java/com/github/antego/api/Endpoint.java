@@ -17,16 +17,16 @@ import java.util.concurrent.CountDownLatch;
 
 public class Endpoint {
     private static final Logger logger = LoggerFactory.getLogger(Endpoint.class);
-    private static final Config config = ConfigFactory.load();
+    private final Config config;
     private final MetricRouter metricRouter;
     private CountDownLatch shutdown;
     private Server server;
 
-
     //todo secure
-    public Endpoint(MetricRouter metricRouter, CountDownLatch shutdown) {
+    public Endpoint(MetricRouter metricRouter, CountDownLatch shutdown, Config config) {
         this.metricRouter = metricRouter;
         this.shutdown = shutdown;
+        this.config = config;
     }
 
     public void start() throws Exception {
