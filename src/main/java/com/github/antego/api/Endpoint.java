@@ -2,6 +2,7 @@ package com.github.antego.api;
 
 import com.github.antego.ConfigurationKey;
 import com.github.antego.storage.RouterStorage;
+import com.sun.javafx.fxml.builder.URLBuilder;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.eclipse.jetty.server.Server;
@@ -11,6 +12,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.net.URL;
 import java.util.concurrent.CountDownLatch;
 
 public class Endpoint {
@@ -27,11 +29,11 @@ public class Endpoint {
     }
 
     public void start() throws Exception {
-        URI baseUri = UriBuilder.fromUri("http://")
-                .host(config.getString(ConfigurationKey.JETTY_HOST))
-                .port(config.getInt(ConfigurationKey.JETTY_PORT)).build();
+        URL url = new URL("http", config.getString(ConfigurationKey.JETTY_HOST),
+                config.getInt(ConfigurationKey.JETTY_PORT), "");
+
         ResourceConfig config = new ResourceConfig(MetricResource.class).register(new StorageBinder());
-        server = JettyHttpContainerFactory.createServer(baseUri, config);
+        server = JettyHttpContainerFactory.createServer(url.toURI(), config);
         server.start();
     }
 

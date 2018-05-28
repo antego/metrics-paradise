@@ -52,7 +52,8 @@ public class Utils {
         int port = config.getInt(ConfigurationKey.ZOOKEEPER_PORT);
         String host = config.getString(ConfigurationKey.ZOOKEEPER_HOST);
         CountDownLatch latch = new CountDownLatch(1);
-        ZooKeeper zooKeeper = new ZooKeeper(host + ":" + port, 200000, event -> {
+        ZooKeeper zooKeeper = new ZooKeeper(host + ":" + port,
+                config.getInt(ConfigurationKey.ZOOKEEPER_SESSION_TIMEOUT_MS), event -> {
             logger.info("New state {}", event.getState());
             if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
                 latch.countDown();

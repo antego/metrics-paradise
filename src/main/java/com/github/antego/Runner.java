@@ -14,10 +14,11 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
 public class Runner {
-    public static final Config config = ConfigFactory.load();
-
-    //todo integration test
     public static void main(String[] args) throws Exception {
+        new Runner().start(ConfigFactory.load());
+    }
+
+    public void start(Config config) throws Exception {
         ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
         Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
         coordinator.init();
