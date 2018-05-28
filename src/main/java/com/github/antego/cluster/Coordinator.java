@@ -14,6 +14,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -79,7 +80,7 @@ public class Coordinator implements AutoCloseable {
             return;
         }
         String resultPath = zookeeper.create(rootNodeName, null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        logger.info("No root path found. Created zookeeper root path {}", resultPath);
+        logger.info("No root path found. Created zookeeper root path at [{}]", resultPath);
     }
 
     /*
@@ -109,24 +110,13 @@ public class Coordinator implements AutoCloseable {
         clusterStateVersion.incrementAndGet();
     }
 
-    public boolean isMetricOwnedByNode(int metricHashCode) {
-        return clusterState.isMetricOwnedByNode(metricHashCode);
-    }
-
-    public int getClusterStateVersion() {
-        return clusterStateVersion.get();
-    }
-
-    public URI getUriOfMetricNode(String name) {
-        Node node = clusterState.getNodeByMetric(name.hashCode());
-        String host = node.getHost();
-        int port = node.getPort();
-        return URI.create("http://" + host + ":" + port);
-    }
-
     public void removeSelf() throws Exception {
         String nodePath = rootNodeName + "/" + nodePrefix + selfId;
         logger.info("Removing own node [{}] from zookeeper", nodePath);
         zookeeper.delete(nodePath, -1);
+    }
+
+    public ClusterState getClusterState() {
+        return clusterState;
     }
 }

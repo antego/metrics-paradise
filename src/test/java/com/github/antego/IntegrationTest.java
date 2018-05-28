@@ -18,8 +18,10 @@ import org.testcontainers.containers.GenericContainer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -60,9 +62,8 @@ public class IntegrationTest {
         Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
                 ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
 
-        new Thread(() -> new Runner().start(config)).start();
-
         String host = "http://localhost:8080";
+        Instance instance1 = new Instance(host, config);
 
         waitTillStart(host);
 
@@ -71,7 +72,7 @@ public class IntegrationTest {
         List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
 
         assertEquals(metric.getValue(), metrics.get(0).getValue(), .00001);
-        client.newRequest(host).path("/shutdown").method(HttpMethod.POST).send();
+        instance1.shutdown();
     }
 
     private void waitTillStart(String host) throws Exception {
@@ -89,7 +90,21 @@ public class IntegrationTest {
         assertEquals(200, response.getStatus());
     }
 
+    private class Instance {
+        private final String host;
+        private final CountDownLatch endpointLatch = new CountDownLatch(1);
 
+        public Instance(String host, Config config) {
+            this.host = host;
+            new Thread(() -> {
+                new Runner().start(config);
+                endpointLatch.countDown();
+            }).start();
+        }
 
-
+        public void shutdown() throws InterruptedException, ExecutionException, TimeoutException {
+            client.newRequest(host).path("/shutdown").method(HttpMethod.GET).send();
+            endpointLatch.await();
+        }
+    }
 }

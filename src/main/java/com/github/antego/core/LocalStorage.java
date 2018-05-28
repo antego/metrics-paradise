@@ -52,36 +52,30 @@ public class LocalStorage {
     //todo index
     //todo aggreagate queries
     public void put(Metric metric) throws SQLException {
-        synchronized (connection) {
-            putStmt.setLong(1, metric.getTimestamp());
-            putStmt.setString(2, metric.getName());
-            putStmt.setDouble(3, metric.getValue());
-            putStmt.execute();
-        }
+        putStmt.setLong(1, metric.getTimestamp());
+        putStmt.setString(2, metric.getName());
+        putStmt.setDouble(3, metric.getValue());
+        putStmt.execute();
     }
 
     public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        synchronized (connection) {
-            populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
-            ResultSet rs = getStmt.executeQuery();
-            List<Metric> metrics = new ArrayList<>();
-            while (rs.next()) {
-                long timestamp = rs.getLong(1);
-                String resultName = rs.getString(2);
-                double value = rs.getDouble(3);
-                metrics.add(new Metric(timestamp, resultName, value));
-            }
-            return metrics;
+        populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
+        ResultSet rs = getStmt.executeQuery();
+        List<Metric> metrics = new ArrayList<>();
+        while (rs.next()) {
+            long timestamp = rs.getLong(1);
+            String resultName = rs.getString(2);
+            double value = rs.getDouble(3);
+            metrics.add(new Metric(timestamp, resultName, value));
         }
+        return metrics;
     }
 
     public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        synchronized (connection) {
-            populateBaseQuery(getMinStmt, timeStartInclusive, timeEndExclusive, name);
-            ResultSet rs = getMinStmt.executeQuery();
-            rs.next();
-            return rs.getDouble(1);
-        }
+        populateBaseQuery(getMinStmt, timeStartInclusive, timeEndExclusive, name);
+        ResultSet rs = getMinStmt.executeQuery();
+        rs.next();
+        return rs.getDouble(1);
     }
 
     private void populateBaseQuery(PreparedStatement stmt, long timeStartInclusive, long timeEndExclusive, String name) throws SQLException {
@@ -91,20 +85,16 @@ public class LocalStorage {
     }
 
     public Set<String> getAllMetricNames() throws SQLException {
-        synchronized (connection) {
-            ResultSet rs = getNamesStmt.executeQuery();
-            Set<String> names = new HashSet<>();
-            while (rs.next()) {
-                names.add(rs.getString(1));
-            }
-            return names;
+        ResultSet rs = getNamesStmt.executeQuery();
+        Set<String> names = new HashSet<>();
+        while (rs.next()) {
+            names.add(rs.getString(1));
         }
+        return names;
     }
 
     public void delete(String name) throws SQLException {
-        synchronized (connection) {
-            deleteStmt.setString(1, name);
-            deleteStmt.executeUpdate();
-        }
+        deleteStmt.setString(1, name);
+        deleteStmt.executeUpdate();
     }
 }

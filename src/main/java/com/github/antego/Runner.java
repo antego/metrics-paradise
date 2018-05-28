@@ -40,9 +40,9 @@ public class Runner {
 
             shutdown.await();
 
-            endpoint.stop();
-
             coordinator.removeSelf();
+
+            endpoint.stop();
 
             metricRouter.doRebalanceIfNeeded();
             metricRouter.close();

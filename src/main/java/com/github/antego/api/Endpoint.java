@@ -5,6 +5,7 @@ import com.github.antego.core.MetricRouter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.eclipse.jetty.server.Server;
+import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;

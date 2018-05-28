@@ -1,7 +1,9 @@
 package com.github.antego.core;
 
 import com.github.antego.api.RemoteNodeClient;
+import com.github.antego.cluster.ClusterState;
 import com.github.antego.cluster.Coordinator;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
@@ -17,15 +19,19 @@ import static org.mockito.Mockito.when;
 public class MetricRouterTest {
     private LocalStorage localStorage = mock(LocalStorage.class);
     private Coordinator coordinator = mock(Coordinator.class);
+    private ClusterState state = mock(ClusterState.class);
     private RemoteNodeClient remoteNodeClient = mock(RemoteNodeClient.class);
     private MetricRouter router = new MetricRouter(localStorage, coordinator, remoteNodeClient);
     private URI uri = URI.create("http://uri");
 
-
+    @Before
+    public void setupCoordinator() {
+        when(coordinator.getClusterState()).thenReturn(state);
+    }
     @Test
     public void shouldPutIfMetricMatch() throws Exception {
         Metric metric = new Metric(10, "name", 0);
-        when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
+        when(state.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
         router.put(metric);
 
@@ -35,7 +41,7 @@ public class MetricRouterTest {
     @Test
     public void shouldProxyNotSelfMetric() throws Exception {
         Metric metric = new Metric(10, "name", 0);
-        when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
+        when(state.isMetricOwnedByNode(anyInt())).thenReturn(false);
 
         router.put(metric);
 
@@ -44,7 +50,7 @@ public class MetricRouterTest {
 
     @Test
     public void shouldGetMetricIfMatch() throws Exception {
-        when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(true);
+        when(state.isMetricOwnedByNode(anyInt())).thenReturn(true);
 
         router.get("metric", 10, 20);
 
@@ -53,8 +59,8 @@ public class MetricRouterTest {
 
     @Test
     public void shouldGetMetricIfNoMatch() throws Exception {
-        when(coordinator.isMetricOwnedByNode(anyInt())).thenReturn(false);
-        when(coordinator.getUriOfMetricNode(anyString())).thenReturn(uri);
+        when(state.isMetricOwnedByNode(anyInt())).thenReturn(false);
+        when(state.getUriOfMetricNode(anyString())).thenReturn(uri);
 
         router.get("metric", 10, 20);
 
