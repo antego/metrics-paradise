@@ -29,7 +29,6 @@ public class Runner {
             coordinator.init();
 
             MetricRouter metricRouter = new MetricRouter(new LocalStorage(), coordinator, new RemoteNodeClient());
-
             metricRouter.doRebalanceIfNeeded();
 
             CountDownLatch shutdown = new CountDownLatch(1);
@@ -38,13 +37,15 @@ public class Runner {
 
             coordinator.advertiseSelf(UUID.randomUUID().toString());
 
+            //todo handle interrupted exception
             shutdown.await();
 
             coordinator.removeSelf();
-
             endpoint.stop();
 
+            coordinator.refreshClusterState();
             metricRouter.doRebalanceIfNeeded();
+
             metricRouter.close();
             coordinator.close();
         } catch (Exception e) {

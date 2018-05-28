@@ -71,6 +71,8 @@ public class MetricRouter {
         synchronized (lock) {
             if (isClusterChanged()) {
                 rebalance();
+            } else {
+                logger.debug("State not changed");
             }
         }
     }
