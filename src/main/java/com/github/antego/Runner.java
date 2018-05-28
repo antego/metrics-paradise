@@ -23,6 +23,7 @@ public class Runner {
     }
 
     public void start(Config config) {
+        logger.info("Starting Metrics Paradise Node");
         try {
             ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
             Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());

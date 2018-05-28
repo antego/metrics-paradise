@@ -151,6 +151,11 @@
 
     <build>
         <finalName>metrics-paradise</finalName>
+        <resources>
+            <resource>
+                <directory>src/main/resouces</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

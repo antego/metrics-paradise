@@ -54,6 +54,7 @@ public class Utils {
     public static ZooKeeper createZookeeperClient(Config config) throws IOException {
         int port = config.getInt(ConfigurationKey.ZOOKEEPER_PORT);
         String host = config.getString(ConfigurationKey.ZOOKEEPER_HOST);
+        logger.info("Establishing connection to zookeeper on host [{}] port [{}]", host, port);
         CountDownLatch latch = new CountDownLatch(1);
         ZooKeeper zooKeeper = new ZooKeeper(host + ":" + port,
                 config.getInt(ConfigurationKey.ZOOKEEPER_SESSION_TIMEOUT_MS), event -> {

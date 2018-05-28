@@ -1,7 +1,7 @@
 #!/bin/bash
 
 chports=(8123 8124 8125 8126)
-docker-compose --project-name clickhouse-test up -d
+docker-compose -f clickhouse-compose.yml --project-name clickhouse-test up -d
 
 # Create tables on each replica
 for PORT in "${chports[@]}"; do
@@ -28,4 +28,4 @@ docker run --rm -d --network=clickhouse-test_default --name yandex-tank \
  -v ${PWD}/config/tank.ini:/tank.ini -v ${PWD}/logs:/logs --entrypoint "/usr/bin/yandex-tank" \
  gtrafimenkov/yandex-tank -c /tank.ini >/dev/null
 
-echo "You can check statistics in Graphite: http://localhost:8080/"
+echo "Metrics of performance test can be checked in Graphite: http://localhost:8080/"
