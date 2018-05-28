@@ -46,7 +46,6 @@ public class MetricResource {
 
     @POST
     @Path("/metrics")
-    @Consumes(MediaType.TEXT_PLAIN)
     public Response saveMetricsFromTsv(String tsv) throws Exception {
         List<Metric> metrics;
         try {
@@ -69,6 +68,12 @@ public class MetricResource {
     @Path("/shutdown")
     public Response shutdown() {
         shutdown.countDown();
+        return Response.status(200).build();
+    }
+
+    @GET
+    @Path("/check")
+    public Response checkAvailable() {
         return Response.status(200).build();
     }
 }

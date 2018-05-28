@@ -4,6 +4,7 @@ package com.github.antego.storage;
 import com.github.antego.Utils;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Response;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 
@@ -22,9 +23,12 @@ public class RemoteStorage implements AutoCloseable {
         httpClient.start();
     }
 
-    public void put(Metric metric, URI uri) throws InterruptedException, ExecutionException, TimeoutException {
-        httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)), "")
+    public void put(Metric metric, URI uri) throws Exception {
+        Response response = httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)))
                 .path("/metrics").send();
+        if (response.getStatus() != 201) {
+            throw new Exception("Failed to write metric");
+        }
     }
 
     public List<Metric> get(String metric, long startTime, long endTime, URI uri) throws Exception {

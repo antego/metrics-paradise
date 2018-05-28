@@ -21,6 +21,9 @@ public class Utils {
     public static List<Metric> parseTsv(String tsv) {
         List<Metric> metrics = new ArrayList<>();
         String[] lines = tsv.split("\n");
+        if (tsv.isEmpty()) {
+            return metrics;
+        }
         for (String line : lines) {
             String[] fields = line.split("\t");
             long timestamp = Long.valueOf(fields[0]);
@@ -54,9 +57,10 @@ public class Utils {
         CountDownLatch latch = new CountDownLatch(1);
         ZooKeeper zooKeeper = new ZooKeeper(host + ":" + port,
                 config.getInt(ConfigurationKey.ZOOKEEPER_SESSION_TIMEOUT_MS), event -> {
-            logger.info("New state {}", event.getState());
+            logger.info("Zookeeper connection init state {}", event.getState());
             if (event.getState() == Watcher.Event.KeeperState.SyncConnected) {
                 latch.countDown();
+                logger.info("Connected to zookeeper");
             }
         });
         try {

@@ -8,6 +8,7 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.verify.VerificationTimes;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -26,12 +27,12 @@ public class RemoteStorageTest {
     }
 
     @Test
-    public void shouldSendPut() throws InterruptedException, ExecutionException, TimeoutException {
+    public void shouldSendPut() throws Exception {
         HttpRequest request = request().withMethod("POST")
                 .withPath("/metrics")
-                .withBody("10\tmetric\t2.0\n");
+                .withBody("10\tmetric\t2.0\n", StandardCharsets.UTF_8);
 
-        mockServerClient.when(request).respond(response().withStatusCode(200));
+        mockServerClient.when(request).respond(response().withStatusCode(201));
 
         Metric metric = new Metric(10, "metric", 2);
         storage.put(metric, URI.create("http://localhost:" + mockServerRule.getPort()));
