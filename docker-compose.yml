@@ -8,7 +8,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
 
-  metrics-paradise:
+  metrics-paradise-1:
     image: metrics-paradise:1.0.0
     ports:
       - 8080:8080
@@ -21,6 +21,20 @@ services:
        -Dlog.level=info
        -Ddb.h2.url=jdbc:h2:/usr/share/metrics-paradise/db
        -Dmonitoring.enabled=true
+       -Dadvertise.host=metrics-paradise-1
+
+  metrics-paradise-2:
+    image: metrics-paradise:1.0.0
+    depends_on:
+      - zookeeper
+      - graphite
+    environment:
+      - _JAVA_OPTIONS=
+       -Dzookeeper.host=zookeeper
+       -Dlog.level=info
+       -Ddb.h2.url=jdbc:h2:/usr/share/metrics-paradise/db
+       -Dmonitoring.enabled=true
+       -Dadvertise.host=metrics-paradise-2
 
   graphite:
     image: hopsoft/graphite-statsd
@@ -32,10 +46,10 @@ services:
     image: justb4/jmeter
     depends_on:
       - graphite
-      - metrics-paradise
+      - metrics-paradise-1
     volumes:
-      - ./config/20k-10thread.jmx:/tests/3devices.jmx
-    command: -n -t "/tests/3devices.jmx"
+      - ./config/20k-10thread.jmx:/tests/test.jmx
+    command: -n -t "/tests/test.jmx"
 
   grafana:
     image: grafana/grafana

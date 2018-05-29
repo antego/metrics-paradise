@@ -4,7 +4,7 @@ Let's imaging that we have a task of processing and storing large amount of IoT 
 
 I'll start with the first approach. Usage of well known and common products, such as databases and messaging systems seems simpler because we don't need to write code and also cheaper because we don't have to maintain it later. Also it's easier to find people familiar with these technologies. 
 
-Before choosing right tools for the task we need formalize our requirements. The metric processing system should be:
+Before choosing right tools for the task it's better to formalize requirements. The metric processing system should be:
 * Scalable
 * Fast
 * Self-contained 
@@ -16,7 +16,7 @@ From the requirements it's clear that we need a database to save metrics and ret
 
 It's maybe wise to take a look at OLAP databases such as Druid or Clickhouse (later just CH). I've worked with Druid and I didn't like it because it was hard to setup and maintain. I'm curios about CH and I want to try it out for this task.
 
-Clickhouse is advertised as fast and scalable. I've created the Docker Compose environment for testing this storage. CH has built in HTTP server so we can send and run queries from any device with utility such as `curl`. Each coffee machine has it these days, isn't it?
+Clickhouse is advertised as fast and scalable. I've created the Docker Compose environment for testing this storage. CH has built in HTTP server so we can send and run queries from any device with utility such as `curl`. Each coffee machine has it these days.
 
 To run load test just execute the command
 ```
@@ -31,7 +31,7 @@ Scaling mechanism of CH is not very convenient. The cluster nodes are listed in 
 
 Also CH is crashing on malformed queries.
 
-I didn't like the scaling ability of CH and I got excited to build truly scalable storage system by myself.
+I didn't like the scaling ability of CH and I got excited about building truly scalable storage system by myself.
 
 ## Second approach. 
 
@@ -49,6 +49,42 @@ It doesn't matter to which node metrics gets pushed. They will be stored on the 
 One node can handle up to 6K RPS on an average machine. It's like a whole green house of thermometers.
 * __Self-contained.__
 Independent from external services. It doesn't need messaging systems or databases. It depends on ZooKeeper though but every cool peace of software today needs ZooKeeper so it's a plus.
+
+### Building and running
+
+Note: Instead of writing additional service for sending metrics I decided to learn and use special tool such as JMeter.
+
+Prerequisits
+* Java 8
+* Maven
+* Docker
+
+To build Docker image
+```
+mvn package
+```
+
+To run two node cluster and performance test on it
+```
+docker-compose up
+```
+Also it will start Grafana with beautiful dashboard of service metrics. Credentials are admin/admin.
+<http://localhost:3000/d/cvQIZ84ik/metrics-paradise?refresh=5s&orgId=1&from=now-30m&to=now&theme=light>
+
+To start JMeter again with other test plan
+```
+docker run --rm -it --network=clickhouse-test_default --name clickhouse-jmeter \
+ -v ${PWD}/config/20k-10thread.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
+```
+
+
+
+### Limitations
+
+* No metric processing. Only storage.
+* Slow. The underlying database is single threaded. It leads to a high contention on this resource.
+* Slow rebalances. Rebalances not uses the ability to bulk load the data.
+
 
 
 

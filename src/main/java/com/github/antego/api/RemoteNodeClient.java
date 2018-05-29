@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.List;
 
 import static com.github.antego.util.Utils.dumpMetricToTsv;
@@ -50,7 +49,7 @@ public class RemoteNodeClient implements AutoCloseable {
 
     public void put(Metric metric, URI uri) throws Exception {
         Monitoring.mark(MetricName.REMOTE_POST);
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST_POST)) {
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST_TIME)) {
             secureIfNeeded(uri);
             Response response = httpClient.POST(uri)
                     .content(new StringContentProvider(dumpMetricToTsv(metric)))

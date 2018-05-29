@@ -63,7 +63,7 @@
           "$$hashKey": "object:134",
           "refCount": 0,
           "refId": "B",
-          "target": "metrics-paradise.*.STORAGE_GET.m1_rate"
+          "target": "metrics-paradise.*.STORAGE_GET.m15_rate"
         }
       ],
       "thresholds": [],
@@ -143,14 +143,16 @@
       "steppedLine": false,
       "targets": [
         {
+          "$$hashKey": "object:135",
           "refCount": 0,
           "refId": "B",
-          "target": "metrics-paradise.*.STORAGE_PUT_TIME.mean"
+          "target": "metrics-paradise.*.STORAGE_PUT_TIME.p50"
         },
         {
+          "$$hashKey": "object:136",
           "refCount": 0,
           "refId": "A",
-          "target": "metrics-paradise.*.STORAGE_GET_TIME.mean"
+          "target": "metrics-paradise.*.STORAGE_GET_TIME.p50"
         }
       ],
       "thresholds": [],
@@ -206,93 +208,6 @@
         "x": 12,
         "y": 0
       },
-      "id": 8,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "refCount": 0,
-          "refId": "A",
-          "target": "metrics-paradise.*.POST_REQUEST_TIME.p50"
-        },
-        {
-          "refCount": 0,
-          "refId": "B",
-          "target": "metrics-paradise.*.GET_REQUEST_TIME.mean"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "API latencies",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "Graphite",
-      "fill": 1,
-      "gridPos": {
-        "h": 8,
-        "w": 6,
-        "x": 18,
-        "y": 0
-      },
       "id": 6,
       "legend": {
         "avg": false,
@@ -317,11 +232,13 @@
       "steppedLine": false,
       "targets": [
         {
+          "$$hashKey": "object:340",
           "refCount": 0,
           "refId": "A",
-          "target": "metrics-paradise.*.POST_REQUEST.m1_rate"
+          "target": "metrics-paradise.*.POST_REQUEST.m5_rate"
         },
         {
+          "$$hashKey": "object:341",
           "refCount": 0,
           "refId": "B",
           "target": "metrics-paradise.*.GET_REQUEST.m1_rate"
@@ -377,7 +294,274 @@
       "gridPos": {
         "h": 8,
         "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 8,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "$$hashKey": "object:144",
+          "refCount": 0,
+          "refId": "A",
+          "target": "metrics-paradise.*.POST_REQUEST_TIME.p50"
+        },
+        {
+          "$$hashKey": "object:145",
+          "refCount": 0,
+          "refId": "B",
+          "target": "metrics-paradise.*.GET_REQUEST_TIME.p50"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API times",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Graphite",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
         "x": 0,
+        "y": 8
+      },
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "$$hashKey": "object:386",
+          "refCount": 0,
+          "refId": "A",
+          "target": "metrics-paradise.*.REMOTE_GET.m1_rate"
+        },
+        {
+          "$$hashKey": "object:442",
+          "refCount": 0,
+          "refId": "B",
+          "target": "metrics-paradise.*.REMOTE_POST.m1_rate"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Remote requests",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Graphite",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 14,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "$$hashKey": "object:504",
+          "refCount": 0,
+          "refId": "A",
+          "target": "metrics-paradise.*.REMOTE_GET_TIME.m5_rate"
+        },
+        {
+          "$$hashKey": "object:536",
+          "refCount": 0,
+          "refId": "B",
+          "target": "metrics-paradise.*.REMOTE_POST_TIME.p50"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Remote requests times",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "Graphite",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
         "y": 8
       },
       "id": 10,
@@ -404,8 +588,9 @@
       "steppedLine": false,
       "targets": [
         {
+          "$$hashKey": "object:601",
           "refId": "A",
-          "target": "metrics-paradise.cfad86892f68.REBALANCE_TIME.mean"
+          "target": "metrics-paradise.*.REBALANCE_TIME.p50"
         }
       ],
       "thresholds": [],

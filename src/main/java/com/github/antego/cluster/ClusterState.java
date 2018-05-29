@@ -24,7 +24,7 @@ public class ClusterState {
     }
 
     public Node getNodeByMetric(int metricHash) {
-        int index = metricHash % numberOfInstances;
+        int index = Math.floorMod(metricHash, numberOfInstances);
         return nodes.get(index);
     }
 
@@ -32,7 +32,7 @@ public class ClusterState {
         if (numberOfInstances == 0) {
             return true;
         }
-        return metricHashCode % numberOfInstances == selfIndex;
+        return Math.floorMod(metricHashCode, numberOfInstances) == selfIndex;
     }
 
     public URI getUriOfMetricNode(String name) {
