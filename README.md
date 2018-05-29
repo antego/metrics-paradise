@@ -86,7 +86,7 @@ Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 
 ### Architecture
 
-![](https://octodex.github.com/images/yaktocat.png)
+![](architecture.png)
 ### Limitations
 
 * No metric processing. Only storage.
