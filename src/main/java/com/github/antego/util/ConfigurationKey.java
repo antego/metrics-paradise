@@ -18,4 +18,5 @@ public class ConfigurationKey {
     public static final String MONITORING_GRAPHITE_HOST = "monitoring.graphite.host";
     public static final String MONITORING_GRAPHITE_PORT = "monitoring.graphite.port";
     public static final String MONITORING_ENABLED = "monitoring.enabled";
+    public static final String MONITORING_PREFIX = "monitoring.prefix";
 }
