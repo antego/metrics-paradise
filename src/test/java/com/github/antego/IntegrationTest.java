@@ -45,7 +45,9 @@ public class IntegrationTest {
 
     @AfterClass
     public static void disconnectFromZookeeper() throws InterruptedException {
-        zookeeperContainer.stop();
+        if (zookeeperContainer != null) {
+            zookeeperContainer.stop();
+        }
     }
 
     @Before
@@ -63,11 +65,12 @@ public class IntegrationTest {
         Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
                 ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
 
-        String host = "http://localhost:8080";
+        String host = "http://user:password@localhost:8080";
         Instance instance1 = new Instance(host, config);
         instance1.waitAvailable();
 
         Metric metric = new Metric(20, "metric", 4);
+        host = "http://user:password@localhost:8080";
         storage.put(metric, URI.create(host));
         List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
 

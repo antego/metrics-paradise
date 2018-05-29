@@ -43,7 +43,7 @@ public class Endpoint {
         ResourceConfig config = new ResourceConfig(MetricResource.class)
                 .register(new StorageBinder())
                 .register(MetricResource.GeneralExceptionMapper.class);
-        server = JettyHttpContainerFactory.createServer(url.toURI(), config);
+        server = JettyHttpContainerFactory.createServer(url.toURI(), config, false);
         if (this.config.getBoolean(ConfigurationKey.JETTY_SECURITY_ENABLED)) {
             server.setHandler(basicAuth());
         }

@@ -39,8 +39,10 @@ public class Runner {
 
             coordinator.advertiseSelf(UUID.randomUUID().toString());
 
-            //todo handle interrupted exception
-            shutdown.await();
+            try {
+                shutdown.await();
+            } catch (InterruptedException ignore) {
+            }
 
             coordinator.removeSelf();
             endpoint.stop();

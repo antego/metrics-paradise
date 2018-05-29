@@ -32,7 +32,8 @@ public class RemoteNodeClient implements AutoCloseable {
     public void put(Metric metric, URI uri) throws Exception {
         Monitoring.mark(MetricName.REMOTE_POST);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST_POST)) {
-            Response response = httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)))
+            Response response = httpClient.POST(uri)
+                    .content(new StringContentProvider(dumpMetricToTsv(metric)))
                     .path("/metrics").send();
             if (response.getStatus() != 201) {
                 throw new Exception("Failed to write metric");
