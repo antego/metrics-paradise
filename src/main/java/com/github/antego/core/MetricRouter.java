@@ -91,8 +91,8 @@ public class MetricRouter {
 
     //todo rebalancer thread
     private void rebalance() throws Exception {
-        Monitoring.mark(MetricName.REBALANCES);
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REBALANCES)) {
+        Monitoring.mark(MetricName.REBALANCE);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REBALANCE_TIME)) {
             logger.info("Rebalancing metrics");
             Set<String> metricNames = localStorage.getAllMetricNames();
             for (String name : metricNames) {

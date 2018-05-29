@@ -55,8 +55,8 @@ public class LocalStorage {
     //todo index
     //todo aggreagate queries
     public void put(Metric metric) throws SQLException {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_PUT)) {
-            Monitoring.mark(MetricName.STORAGE_PUT);
+        Monitoring.mark(MetricName.STORAGE_PUT);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_PUT_TIME)) {
             putStmt.setLong(1, metric.getTimestamp());
             putStmt.setString(2, metric.getName());
             putStmt.setDouble(3, metric.getValue());
@@ -65,8 +65,8 @@ public class LocalStorage {
     }
 
     public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_GET)) {
-            Monitoring.mark(MetricName.STORAGE_GET);
+        Monitoring.mark(MetricName.STORAGE_GET);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_GET_TIME)) {
             populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
             ResultSet rs = getStmt.executeQuery();
             List<Metric> metrics = new ArrayList<>();

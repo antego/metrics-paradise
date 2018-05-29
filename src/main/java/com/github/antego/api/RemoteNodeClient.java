@@ -30,8 +30,8 @@ public class RemoteNodeClient implements AutoCloseable {
     }
 
     public void put(Metric metric, URI uri) throws Exception {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST)) {
-            Monitoring.mark(MetricName.REMOTE_POST);
+        Monitoring.mark(MetricName.REMOTE_POST);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST_POST)) {
             Response response = httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)))
                     .path("/metrics").send();
             if (response.getStatus() != 201) {
@@ -41,8 +41,8 @@ public class RemoteNodeClient implements AutoCloseable {
     }
 
     public List<Metric> get(String metric, long startTime, long endTime, URI uri) throws Exception {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_GET)) {
-            Monitoring.mark(MetricName.REMOTE_GET);
+        Monitoring.mark(MetricName.REMOTE_GET);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_GET_TIME)) {
             ContentResponse response = httpClient.newRequest(uri)
                     .method(HttpMethod.GET)
                     .param("timestampstart", String.valueOf(startTime))

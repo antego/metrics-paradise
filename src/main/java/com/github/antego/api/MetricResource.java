@@ -42,8 +42,8 @@ public class MetricResource {
     public String getMetricsInTsv(@QueryParam("timestampstart") long timestampStart,
                               @QueryParam("timestampend") long timestampEnd,
                               @QueryParam("metricname") String metricName) throws Exception {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.GET_REQUEST)) {
-            Monitoring.mark(MetricName.GET_REQUESTS);
+        Monitoring.mark(MetricName.GET_REQUEST);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.GET_REQUEST_TIME)) {
             logger.debug("Received query for metrics [{}], [{}], [{}]", metricName, timestampStart, timestampEnd);
             return dumpMetricsToTsv(metricRouter.get(metricName, timestampStart, timestampEnd));
         }
@@ -52,8 +52,8 @@ public class MetricResource {
     @POST
     @Path("/metrics")
     public Response saveMetricsFromTsv(String tsv) throws Exception {
-        try (Timer.Context context = Monitoring.getTimerContext(MetricName.POST_REQUEST)) {
-            Monitoring.mark(MetricName.POST_REQUESTS);
+        Monitoring.mark(MetricName.POST_REQUEST);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.POST_REQUEST_TIME)) {
             logger.debug("Received metric [{}]", tsv);
             List<Metric> metrics;
             try {

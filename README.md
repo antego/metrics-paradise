@@ -55,3 +55,6 @@ GET 'http://default:password@localhost:8123/?query=SELECT * FROM MetricReplicate
 Single instance consumes 200k metrics from 10 client at a rate of 6k RPS.
 
 Select queries processed at a rate of 5 RPS on a set of 200k metrics.
+
+Grafana dashboard. Credentials are admin/admin 
+http://localhost:3000/d/cvQIZ84ik/metrics-paradise?refresh=5s&orgId=1&from=now-30m&to=now&theme=light

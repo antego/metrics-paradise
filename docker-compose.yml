@@ -16,7 +16,11 @@ services:
       - zookeeper
       - graphite
     environment:
-      - _JAVA_OPTIONS=-Dzookeeper.host=zookeeper -Dlog.level=info -Ddb.h2.url=jdbc:h2:/usr/share/metrics-paradise/db
+      - _JAVA_OPTIONS=
+       -Dzookeeper.host=zookeeper
+       -Dlog.level=info
+       -Ddb.h2.url=jdbc:h2:/usr/share/metrics-paradise/db
+       -Dmonitoring.enabled=true
 
   graphite:
     image: hopsoft/graphite-statsd
@@ -45,6 +49,7 @@ services:
       - ./config/graphite.yaml:/etc/grafana/provisioning/datasources/graphite.yaml
       - ./config/dbprovider.yaml:/etc/grafana/provisioning/dashboards/dbprovider.yaml
       - ./config/jmeter-dashboard.json:/var/lib/grafana/dashboards/jmeter-dashboard.json
+      - ./config/metrics-paradise-dashboard.json:/var/lib/grafana/dashboards/metrics-paradise-dashboard.json
 
 
 
