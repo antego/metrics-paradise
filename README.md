@@ -84,7 +84,9 @@ Single instance consumes 200k metrics from 10 client at a rate of 6k RPS.
 
 Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 
+### Architecture
 
+![](https://octodex.github.com/images/yaktocat.png)
 ### Limitations
 
 * No metric processing. Only storage.
