@@ -37,6 +37,19 @@ I didn't like the scaling ability of CH and I got excited to build truly scalabl
 
 *Building a scalable storage system which one can be proud of.*
 
+The new distributed database has humble name of Metrics Paradise. Core of it's features:
+
+* __Easily scalable.__
+Just by starting the new Node every other node knows about it and automatically rebalances it's data.
+* __Easily downscalable.__ 
+Node can be disabled by REST API. Before shutting down it will rebalnce it's data to the other nodes. No data loss!
+* __Has secured HTTP interface.__
+It doesn't matter to which node metrics gets pushed. They will be stored on the right node. Same thing with queries. They can be run on every node.
+* __Fast.__
+One node can handle up to 6K RPS on an average machine. It's like a whole green house of thermometers.
+* __Self-contained.__
+Independent from external services. It doesn't need messaging systems or databases. It depends on ZooKeeper though but every cool peace of software today needs ZooKeeper so it's a plus.
+
 
 
 
