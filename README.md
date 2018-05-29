@@ -68,7 +68,7 @@ To run two node cluster and performance test on it
 ```
 docker-compose up
 ```
-Also it will start Grafana with beautiful dashboard of service metrics. Credentials are admin/admin.
+Also it will start Grafana with beautiful dashboard of service metrics. Credentials are `admin/admin`.
 <http://localhost:3000/d/cvQIZ84ik/metrics-paradise?refresh=5s&orgId=1&from=now-30m&to=now&theme=light>
 
 To start JMeter again with other test plan
@@ -76,100 +76,22 @@ To start JMeter again with other test plan
 docker run --rm -it --network=clickhouse-test_default --name clickhouse-jmeter \
  -v ${PWD}/config/20k-10thread.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
 ```
+### Results of performance testing
 
+200 000 metrics has size of 5MB on a file system. 
+
+Single instance consumes 200k metrics from 10 client at a rate of 6k RPS.
+
+Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 
 
 ### Limitations
 
 * No metric processing. Only storage.
-* Slow. The underlying database is single threaded. It leads to a high contention on this resource.
+* Slow. The underlying database is single threaded.
 * Slow rebalances. Rebalances not uses the ability to bulk load the data.
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Apply existing tools to solve a problem. For 
-
-
-Why ClickHouse
-* Told to be performant
-* Scalable
-* Open-sourced
-* With rich functionality
-* Has SQL-like language
-
-
-How-to use ClickHouse
-
-To run ClickHouse test docker-compose is needed.
-
-Run command:
-
-
-
-It will start four nodes of CH along with? zookeeper, JMeter and Graphite
-
-Database has build in http client. Metrics can be send and extracted via http protocol. Password is set to the 'default' user (see config/users.xml) so it's secured :)
-### Create table
-Date column is needed by partitoning alghorithm in MergeTree engine
-```
-echo 'CREATE TABLE Metric (time DateTime, date Date DEFAULT toDate(time), name String, value Float64) ENGINE = MergeTree(date, (time, name), 8192)' | POST 'http://default:password@localhost:8123/'
-```
-### Send a metric
-```
-echo -ne '2018-01-01 12:13:45\tmetricname\t13.5\n' | POST 'http://default:password@localhost:8123/?query=INSERT INTO Metric (time, name, value) FORMAT TabSeparated'
-```
-### Verify data has been saved
-```
-GET 'http://default:password@localhost:8123/?query=SELECT * FROM Metric'
-```
-### Drop table
-```
-echo 'DROP TABLE Metric' | POST 'http://default:password@localhost:8123/'
-```
-
-## Sharded and replicated table
-```
-echo 'CREATE TABLE IF NOT EXISTS MetricReplicated (    
-    time DateTime,
-    date Date DEFAULT toDate(time),
-    name String,
-    value Float64
-) ENGINE = ReplicatedMergeTree('\''/clickhouse/tables/{shard}/hits'\'', '\''{replica}'\'', date, (time, name), 8192)' | POST 'http://default:password@localhost:8123/'
-
-echo 'CREATE TABLE IF NOT EXISTS MetricSharded AS MetricReplicated
-      ENGINE = Distributed(cluster, default, MetricReplicated, rand())' | POST 'http://default:password@localhost:8123/'
-      
-      
-echo -ne '2018-01-01 12:13:45\tmetricname\t13.5\n' | POST 'http://default:password@localhost:8123/?query=INSERT INTO MetricReplicated (time, name, value) FORMAT TabSeparated'
-
-GET 'http://default:password@localhost:8123/?query=SELECT * FROM MetricReplicated'
-```
-
-# Second approach
-
-## Performance testing
-
-200 000 metrics has size of 5MB on a file system. It's a size of a database file after Jmeter run with 20k-10thread.jmx test plan.
-
-Single instance consumes 200k metrics from 10 client at a rate of 6k RPS.
-
-Select queries processed at a rate of 5 RPS on a set of 200k metrics.
-
-Grafana dashboard. Credentials are admin/admin 
-http://localhost:3000/d/cvQIZ84ik/metrics-paradise?refresh=5s&orgId=1&from=now-30m&to=now&theme=light
