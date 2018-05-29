@@ -43,14 +43,16 @@ public class MetricRouter {
         return remoteNodeClient.get(name, timeStartInclusive, timeEndExclusive, targetUri);
     }
 
-    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws Exception {
+    public double getAggregated(String name, long timeStartInclusive, long timeEndExclusive, AggregationType type) throws Exception {
+        URI targetUri;
         doRebalanceIfNeeded();
         synchronized (lock) {
             if (state.isMetricOwnedByMe(name.hashCode())) {
-                return localStorage.getMin(name, timeStartInclusive, timeEndExclusive);
+                return localStorage.getAggregated(name, timeStartInclusive, timeEndExclusive, type);
             }
+            targetUri = state.getUriOfMetricNode(name);
         }
-        return remoteNodeClient.getMin(name, timeStartInclusive, timeEndExclusive);
+        return remoteNodeClient.getAggregated(name, timeStartInclusive, timeEndExclusive, type, targetUri);
     }
 
     public void put(Metric metric) throws Exception {

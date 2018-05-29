@@ -46,12 +46,14 @@ public class MetricResourceTest extends JerseyTest {
     public void shouldRespondWithTsv() throws Exception {
         Metric metric1 = new Metric(1000, "metric1", 4);
         Metric metric2 = new Metric(1001, "metric2", 2);
-        when(metricRouter.get(any(), anyLong(), anyLong())).thenReturn(Arrays.asList(metric1, metric2));
+        when(metricRouter.get(any(), anyLong(), anyLong()))
+                .thenReturn(Arrays.asList(metric1), Arrays.asList(metric2));
 
         Response response = target("metrics")
                 .queryParam("timestampstart", 1000)
                 .queryParam("timestampend", 1002)
-                .queryParam("metricname")
+                .queryParam("metricname", "metric1")
+                .queryParam("metricname", "metric2")
                 .request()
                 .get();
         assertEquals(200, response.getStatus());

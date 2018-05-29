@@ -1,5 +1,6 @@
 package com.github.antego;
 
+import com.github.antego.core.AggregationType;
 import com.github.antego.core.Metric;
 import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.util.ConfigurationKey;
@@ -77,12 +78,20 @@ public class IntegrationTest {
         instance1.waitAvailable();
 
         Metric metric = new Metric(20, "metric", 4);
+        Metric metric2 = new Metric(19, "metric", 6);
         host = "http://localhost:8080/";
         storage = new RemoteNodeClient(config);
         storage.put(metric, URI.create(host));
+        storage.put(metric2, URI.create(host));
         List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
+        double min = storage.getAggregated("metric", 10, 21, AggregationType.MIN, URI.create(host));
+        double max = storage.getAggregated("metric", 10, 21, AggregationType.MAX, URI.create(host));
+        double mean = storage.getAggregated("metric", 10, 21, AggregationType.MEAN, URI.create(host));
 
         assertEquals(metric.getValue(), metrics.get(0).getValue(), .00001);
+        assertEquals(4, min, .00001);
+        assertEquals(6, max, .00001);
+        assertEquals(5, mean, .00001);
         instance1.shutdown();
     }
 

@@ -28,6 +28,8 @@ public class LocalStorage {
             + config.getInt(ConfigurationKey.DB_RESULT_LIMIT);
     private static final String METRIC_GET = "select * " + BASE_QUERY;
     private static final String METRIC_GET_MIN = "select min(value) " + BASE_QUERY;
+    private static final String METRIC_GET_MAX = "select max(value) " + BASE_QUERY;
+    private static final String METRIC_GET_MEAN = "select avg(value) " + BASE_QUERY;
     private static final String GET_METRIC_NAMES = "select distinct name from metric";
     private static final String DELETE_METRICS = "delete from metric where name = ?";
 
@@ -36,6 +38,8 @@ public class LocalStorage {
     private final PreparedStatement putStmt;
     private final PreparedStatement getStmt;
     private final PreparedStatement getMinStmt;
+    private final PreparedStatement getMaxStmt;
+    private final PreparedStatement getMeanStmt;
     private final PreparedStatement getNamesStmt;
     private final PreparedStatement deleteStmt;
 
@@ -48,11 +52,12 @@ public class LocalStorage {
         putStmt = connection.prepareStatement(METRIC_PUT);
         getStmt = connection.prepareStatement(METRIC_GET);
         getMinStmt = connection.prepareStatement(METRIC_GET_MIN);
+        getMaxStmt = connection.prepareStatement(METRIC_GET_MAX);
+        getMeanStmt = connection.prepareStatement(METRIC_GET_MEAN);
         getNamesStmt = connection.prepareStatement(GET_METRIC_NAMES);
         deleteStmt = connection.prepareStatement(DELETE_METRICS);
     }
 
-    //todo index
     //todo aggreagate queries
     public void put(Metric metric) throws SQLException {
         Monitoring.mark(MetricName.STORAGE_PUT);
@@ -80,11 +85,22 @@ public class LocalStorage {
         }
     }
 
-    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        populateBaseQuery(getMinStmt, timeStartInclusive, timeEndExclusive, name);
-        ResultSet rs = getMinStmt.executeQuery();
-        rs.next();
-        return rs.getDouble(1);
+    public double getAggregated(String name, long timeStartInclusive, long timeEndExclusive, AggregationType type) throws SQLException {
+        Monitoring.mark(MetricName.STORAGE_GET_AGGR);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_GET_AGGR_TIME)) {
+            PreparedStatement stmt;
+            if (type == AggregationType.MIN) {
+                stmt = getMinStmt;
+            } else if (type == AggregationType.MAX) {
+                stmt = getMaxStmt;
+            } else {
+                stmt = getMeanStmt;
+            }
+            populateBaseQuery(stmt, timeStartInclusive, timeEndExclusive, name);
+            ResultSet rs = stmt.executeQuery();
+            rs.next();
+            return rs.getDouble(1);
+        }
     }
 
     private void populateBaseQuery(PreparedStatement stmt, long timeStartInclusive, long timeEndExclusive, String name) throws SQLException {

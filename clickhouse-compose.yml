@@ -59,8 +59,6 @@ services:
   graphite:
     image: hopsoft/graphite-statsd
     ports:
-      - 2003
+      - 2003:2003
       - 8080:80
-
-
 

@@ -22,10 +22,11 @@ echo "Creating distributed table"
 echo 'CREATE TABLE IF NOT EXISTS MetricSharded AS MetricReplicated
       ENGINE = Distributed(cluster, default, MetricReplicated, rand())' \
       | POST "http://default:password@localhost:${chports[1]}/"
-      
-echo "Starting Yandex Tank"
-docker run --rm -d --network=clickhouse-test_default --name yandex-tank \
- -v ${PWD}/config/tank.ini:/tank.ini -v ${PWD}/logs:/logs --entrypoint "/usr/bin/yandex-tank" \
- gtrafimenkov/yandex-tank -c /tank.ini >/dev/null
 
 echo "Metrics of performance test can be checked in Graphite: http://localhost:8080/"
+echo "Starting JMeter"
+docker run --rm -it --network=clickhouse-test_default --name clickhouse-jmeter \
+ -v ${PWD}/config/20k-10thread-clickhouse.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
+
+ docker-compose -f clickhouse-compose.yml --project-name clickhouse-test down
+

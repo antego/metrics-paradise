@@ -33,8 +33,14 @@ public class LocalStorageTest {
         localStorage.put(new Metric(10, name, 4));
         localStorage.put(new Metric(11, name, 16));
 
-        double min = localStorage.getMin(name, 6L, 13L); //todo check if no such metric
-        assertEquals(4, 4, .00000001);
+        double min = localStorage.getAggregated(name, 6L, 13L, AggregationType.MIN);
+        assertEquals(4, min, .00000001);
+
+        double max = localStorage.getAggregated(name, 6L, 13L, AggregationType.MAX);
+        assertEquals(16, max, .00000001);
+
+        double mean = localStorage.getAggregated(name, 6L, 13L, AggregationType.MEAN);
+        assertEquals(10, mean, .00000001);
     }
 
     @Test

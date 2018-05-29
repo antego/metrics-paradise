@@ -2,6 +2,7 @@ package com.github.antego.api;
 
 
 import com.codahale.metrics.Timer;
+import com.github.antego.core.AggregationType;
 import com.github.antego.util.ConfigurationKey;
 import com.github.antego.util.MetricName;
 import com.github.antego.util.Monitoring;
@@ -76,8 +77,21 @@ public class RemoteNodeClient implements AutoCloseable {
         }
     }
 
-    public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        return 0;
+    public double getAggregated(String name, long startTime, long endTime, AggregationType type, URI uri) throws Exception {
+        Monitoring.mark(MetricName.REMOTE_GET_AGGR);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_GET_AGGR_TIME)) {
+            secureIfNeeded(uri);
+            ContentResponse response = httpClient.newRequest(uri)
+                    .method(HttpMethod.GET)
+                    .param("timestampstart", String.valueOf(startTime))
+                    .param("timestampend", String.valueOf(endTime))
+                    .param("metricname", name)
+                    .param("aggr", type.toString())
+                    .accept("text/plain")
+                    .path("/metrics").send();
+            String value = response.getContentAsString();
+            return Double.valueOf(value);
+        }
     }
 
     @Override
@@ -91,4 +105,5 @@ public class RemoteNodeClient implements AutoCloseable {
             store.addAuthentication(new BasicAuthentication(uri, "realm", user, password));
         }
     }
+
 }

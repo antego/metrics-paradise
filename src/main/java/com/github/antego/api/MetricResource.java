@@ -1,6 +1,7 @@
 package com.github.antego.api;
 
 import com.codahale.metrics.Timer;
+import com.github.antego.core.AggregationType;
 import com.github.antego.core.Metric;
 import com.github.antego.core.MetricRouter;
 import com.github.antego.util.MetricName;
@@ -18,8 +19,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import static com.github.antego.util.Utils.dumpMetricsToTsv;
 import static com.github.antego.util.Utils.parseTsv;
@@ -41,11 +44,24 @@ public class MetricResource {
     @Produces(MediaType.TEXT_PLAIN)
     public String getMetricsInTsv(@QueryParam("timestampstart") long timestampStart,
                               @QueryParam("timestampend") long timestampEnd,
-                              @QueryParam("metricname") String metricName) throws Exception {
+                              @QueryParam("metricname") List<String> metricNames,
+                              @QueryParam("aggr") String aggrRaw) throws Exception {
         Monitoring.mark(MetricName.GET_REQUEST);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.GET_REQUEST_TIME)) {
-            logger.debug("Received query for metrics [{}], [{}], [{}]", metricName, timestampStart, timestampEnd);
-            return dumpMetricsToTsv(metricRouter.get(metricName, timestampStart, timestampEnd));
+            logger.debug("Received query for metrics {}, [{}], [{}], [{}]", metricNames, timestampStart, timestampEnd, aggrRaw);
+            if (aggrRaw != null && !aggrRaw.isEmpty()) {
+                List<Double> results = new ArrayList<>();
+                for (String metricName : metricNames) {
+                    results.add(metricRouter.getAggregated(metricName,
+                            timestampStart, timestampEnd, AggregationType.valueOf(aggrRaw.toUpperCase())));
+                }
+                return results.stream().map(Object::toString).collect(Collectors.joining("\t"));
+            }
+            StringBuilder results = new StringBuilder();
+            for (String metricName : metricNames) {
+                results.append(dumpMetricsToTsv(metricRouter.get(metricName, timestampStart, timestampEnd)));
+            }
+            return results.toString();
         }
     }
 
