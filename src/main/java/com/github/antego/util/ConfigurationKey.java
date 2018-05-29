@@ -20,4 +20,6 @@ public class ConfigurationKey {
     public static final String MONITORING_ENABLED = "monitoring.enabled";
     public static final String MONITORING_PREFIX = "monitoring.prefix";
     public static final String JETTY_SECURITY_ENABLED = "jetty.security.enabled";
+    public static final String JETTY_USER = "jetty.user";
+    public static final String JETTY_PASSWORD = "jetty.password";
 }

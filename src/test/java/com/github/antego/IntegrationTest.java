@@ -7,7 +7,9 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.AuthenticationStore;
 import org.eclipse.jetty.client.api.Response;
+import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -29,11 +31,8 @@ import static org.junit.Assert.fail;
 
 public class IntegrationTest {
     private static GenericContainer zookeeperContainer;
-    private RemoteNodeClient storage = new RemoteNodeClient();
+    private RemoteNodeClient storage;
     private HttpClient client = new HttpClient();
-
-    public IntegrationTest() throws Exception {
-    }
 
     @BeforeClass
     public static void createTestVerifyClient() throws IOException {
@@ -52,6 +51,14 @@ public class IntegrationTest {
 
     @Before
     public void startClient() throws Exception {
+        Config config = ConfigFactory.load();
+        String user = config.getString(ConfigurationKey.JETTY_USER);
+        String password = config.getString(ConfigurationKey.JETTY_PASSWORD);
+        AuthenticationStore store = client.getAuthenticationStore();
+        store.addAuthentication(new BasicAuthentication(URI.create("http://localhost:8080/"), "realm",
+                user, password));
+        store.addAuthentication(new BasicAuthentication(URI.create("http://localhost:8081/"), "realm",
+                user, password));
         client.start();
     }
 
@@ -65,12 +72,13 @@ public class IntegrationTest {
         Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
                 ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
 
-        String host = "http://user:password@localhost:8080";
+        String host = "http://localhost:8080/";
         Instance instance1 = new Instance(host, config);
         instance1.waitAvailable();
 
         Metric metric = new Metric(20, "metric", 4);
-        host = "http://user:password@localhost:8080";
+        host = "http://localhost:8080/";
+        storage = new RemoteNodeClient(config);
         storage.put(metric, URI.create(host));
         List<Metric> metrics = storage.get("metric", 10, 21, URI.create(host));
 
@@ -82,6 +90,7 @@ public class IntegrationTest {
     public void shouldWriteAndReadAcrossInstances() throws Exception {
         Config config = ConfigFactory.load().withValue(ConfigurationKey.ZOOKEEPER_PORT,
                 ConfigValueFactory.fromAnyRef(zookeeperContainer.getMappedPort(2181)));
+        config = config.withValue(ConfigurationKey.JETTY_SECURITY_ENABLED, ConfigValueFactory.fromAnyRef(true));
 
         Config config1 = config.withValue(ConfigurationKey.JETTY_PORT, ConfigValueFactory.fromAnyRef(8080))
                 .withValue(ConfigurationKey.ADVERTISE_PORT, ConfigValueFactory.fromAnyRef(8080));
@@ -97,6 +106,7 @@ public class IntegrationTest {
 
         Metric metric1 = new Metric(20, "metric1", 4);
         Metric metric2 = new Metric(20, "metric2", 4);
+        storage = new RemoteNodeClient(config);
         storage.put(metric1, URI.create(host1));
         storage.put(metric2, URI.create(host2));
         List<Metric> metrics = storage.get("metric1", 10, 21, URI.create(host2));
@@ -130,6 +140,7 @@ public class IntegrationTest {
         Metric metric3 = new Metric(20, "metric3", 4);
         Metric metric4 = new Metric(20, "metric4", 4);
         Metric metric5 = new Metric(20, "metric5", 4);
+        storage = new RemoteNodeClient(config);
         storage.put(metric1, URI.create(host1));
         storage.put(metric2, URI.create(host1));
         storage.put(metric3, URI.create(host1));

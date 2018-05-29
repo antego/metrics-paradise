@@ -13,7 +13,9 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Credential;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.jetty.JettyHttpContainer;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
+import org.glassfish.jersey.server.ContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +47,9 @@ public class Endpoint {
                 .register(MetricResource.GeneralExceptionMapper.class);
         server = JettyHttpContainerFactory.createServer(url.toURI(), config, false);
         if (this.config.getBoolean(ConfigurationKey.JETTY_SECURITY_ENABLED)) {
-            server.setHandler(basicAuth());
+            SecurityHandler handler = basicAuth();
+            handler.setHandler(ContainerFactory.createContainer(JettyHttpContainer.class, config));
+            server.setHandler(handler);
         }
         server.start();
     }
@@ -65,16 +69,19 @@ public class Endpoint {
     }
 
     private SecurityHandler basicAuth() {
+        String user = config.getString(ConfigurationKey.JETTY_USER);
+        String password = config.getString(ConfigurationKey.JETTY_PASSWORD);
+
         UserStore store = new UserStore();
-        store.addUser("user", Credential.getCredential("password"), new String[] {"user"});
+        store.addUser(user, Credential.getCredential(password), new String[] {user});
 
         HashLoginService l = new HashLoginService();
-        l.setName("myrealm");
+        l.setName("realm");
         l.setUserStore(store);
 
         Constraint constraint = new Constraint();
         constraint.setName(Constraint.__BASIC_AUTH);
-        constraint.setRoles(new String[]{"user"});
+        constraint.setRoles(new String[]{user});
         constraint.setAuthenticate(true);
 
         ConstraintMapping cm = new ConstraintMapping();
@@ -83,7 +90,7 @@ public class Endpoint {
 
         ConstraintSecurityHandler csh = new ConstraintSecurityHandler();
         csh.setAuthenticator(new BasicAuthenticator());
-        csh.setRealmName("myrealm");
+        csh.setRealmName("realm");
         csh.addConstraintMapping(cm);
         csh.setLoginService(l);
 

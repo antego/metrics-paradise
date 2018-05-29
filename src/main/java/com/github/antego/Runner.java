@@ -30,7 +30,7 @@ public class Runner {
             Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
             coordinator.init();
 
-            MetricRouter metricRouter = new MetricRouter(new LocalStorage(), coordinator, new RemoteNodeClient());
+            MetricRouter metricRouter = new MetricRouter(new LocalStorage(), coordinator, new RemoteNodeClient(config));
             metricRouter.doRebalanceIfNeeded();
 
             CountDownLatch shutdown = new CountDownLatch(1);

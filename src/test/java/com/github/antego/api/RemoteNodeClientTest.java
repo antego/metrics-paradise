@@ -2,6 +2,7 @@ package com.github.antego.api;
 
 import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.core.Metric;
+import com.typesafe.config.Config;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockserver.client.server.MockServerClient;
@@ -14,11 +15,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
 public class RemoteNodeClientTest {
-    private RemoteNodeClient storage = new RemoteNodeClient();
+    private RemoteNodeClient storage = new RemoteNodeClient(mock(Config.class));
+
     @Rule
     public MockServerRule mockServerRule = new MockServerRule(this);
     private MockServerClient mockServerClient;
