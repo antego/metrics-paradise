@@ -1,11 +1,9 @@
 package com.github.antego.api;
 
-import com.github.antego.ConfigurationKey;
+import com.github.antego.util.ConfigurationKey;
 import com.github.antego.core.MetricRouter;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
 import org.eclipse.jetty.server.Server;
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -34,7 +32,9 @@ public class Endpoint {
         URL url = new URL("http", config.getString(ConfigurationKey.JETTY_HOST),
                 config.getInt(ConfigurationKey.JETTY_PORT), "");
         logger.info("Binding API to [{}]", url);
-        ResourceConfig config = new ResourceConfig(MetricResource.class).register(new StorageBinder());
+        ResourceConfig config = new ResourceConfig(MetricResource.class)
+                .register(new StorageBinder())
+                .register(MetricResource.GeneralExceptionMapper.class);
         server = JettyHttpContainerFactory.createServer(url.toURI(), config);
         server.start();
     }

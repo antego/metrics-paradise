@@ -2,6 +2,7 @@ package com.github.antego;
 
 import com.github.antego.core.Metric;
 import com.github.antego.api.RemoteNodeClient;
+import com.github.antego.util.ConfigurationKey;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;

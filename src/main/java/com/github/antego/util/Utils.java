@@ -1,4 +1,4 @@
-package com.github.antego;
+package com.github.antego.util;
 
 import com.github.antego.core.Metric;
 import com.typesafe.config.Config;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.antego.ConfigurationKey.ZOOKEEPER_CONNECT_TIMEOUT_SEC;
+import static com.github.antego.util.ConfigurationKey.ZOOKEEPER_CONNECT_TIMEOUT_SEC;
 
 public class Utils {
     private static final Logger logger = LoggerFactory.getLogger(Utils.class);

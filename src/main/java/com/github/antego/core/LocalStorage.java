@@ -1,6 +1,9 @@
 package com.github.antego.core;
 
-import com.github.antego.ConfigurationKey;
+import com.codahale.metrics.Timer;
+import com.github.antego.util.ConfigurationKey;
+import com.github.antego.util.MetricName;
+import com.github.antego.util.Monitoring;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
@@ -52,23 +55,29 @@ public class LocalStorage {
     //todo index
     //todo aggreagate queries
     public void put(Metric metric) throws SQLException {
-        putStmt.setLong(1, metric.getTimestamp());
-        putStmt.setString(2, metric.getName());
-        putStmt.setDouble(3, metric.getValue());
-        putStmt.execute();
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_PUT)) {
+            Monitoring.mark(MetricName.STORAGE_PUT);
+            putStmt.setLong(1, metric.getTimestamp());
+            putStmt.setString(2, metric.getName());
+            putStmt.setDouble(3, metric.getValue());
+            putStmt.execute();
+        }
     }
 
     public List<Metric> get(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {
-        populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
-        ResultSet rs = getStmt.executeQuery();
-        List<Metric> metrics = new ArrayList<>();
-        while (rs.next()) {
-            long timestamp = rs.getLong(1);
-            String resultName = rs.getString(2);
-            double value = rs.getDouble(3);
-            metrics.add(new Metric(timestamp, resultName, value));
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_GET)) {
+            Monitoring.mark(MetricName.STORAGE_GET);
+            populateBaseQuery(getStmt, timeStartInclusive, timeEndExclusive, name);
+            ResultSet rs = getStmt.executeQuery();
+            List<Metric> metrics = new ArrayList<>();
+            while (rs.next()) {
+                long timestamp = rs.getLong(1);
+                String resultName = rs.getString(2);
+                double value = rs.getDouble(3);
+                metrics.add(new Metric(timestamp, resultName, value));
+            }
+            return metrics;
         }
-        return metrics;
     }
 
     public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {

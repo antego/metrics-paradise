@@ -1,7 +1,10 @@
 package com.github.antego.api;
 
 
-import com.github.antego.Utils;
+import com.codahale.metrics.Timer;
+import com.github.antego.util.MetricName;
+import com.github.antego.util.Monitoring;
+import com.github.antego.util.Utils;
 import com.github.antego.core.Metric;
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
@@ -15,7 +18,7 @@ import java.net.URI;
 import java.sql.SQLException;
 import java.util.List;
 
-import static com.github.antego.Utils.dumpMetricToTsv;
+import static com.github.antego.util.Utils.dumpMetricToTsv;
 
 public class RemoteNodeClient implements AutoCloseable {
     private final static Logger logger = LoggerFactory.getLogger(RemoteNodeClient.class);
@@ -27,23 +30,29 @@ public class RemoteNodeClient implements AutoCloseable {
     }
 
     public void put(Metric metric, URI uri) throws Exception {
-        Response response = httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)))
-                .path("/metrics").send();
-        if (response.getStatus() != 201) {
-            throw new Exception("Failed to write metric");
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_POST)) {
+            Monitoring.mark(MetricName.REMOTE_POST);
+            Response response = httpClient.POST(uri).content(new StringContentProvider(dumpMetricToTsv(metric)))
+                    .path("/metrics").send();
+            if (response.getStatus() != 201) {
+                throw new Exception("Failed to write metric");
+            }
         }
     }
 
     public List<Metric> get(String metric, long startTime, long endTime, URI uri) throws Exception {
-        ContentResponse response = httpClient.newRequest(uri)
-                .method(HttpMethod.GET)
-                .param("timestampstart", String.valueOf(startTime))
-                .param("timestampend", String.valueOf(endTime))
-                .param("metricname", metric)
-                .accept("text/plain")
-                .path("/metrics").send();
-        String tsv = response.getContentAsString();
-        return Utils.parseTsv(tsv);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REMOTE_GET)) {
+            Monitoring.mark(MetricName.REMOTE_GET);
+            ContentResponse response = httpClient.newRequest(uri)
+                    .method(HttpMethod.GET)
+                    .param("timestampstart", String.valueOf(startTime))
+                    .param("timestampend", String.valueOf(endTime))
+                    .param("metricname", metric)
+                    .accept("text/plain")
+                    .path("/metrics").send();
+            String tsv = response.getContentAsString();
+            return Utils.parseTsv(tsv);
+        }
     }
 
     public double getMin(String name, long timeStartInclusive, long timeEndExclusive) throws SQLException {

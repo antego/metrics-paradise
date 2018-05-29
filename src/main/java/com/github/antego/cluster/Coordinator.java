@@ -1,6 +1,9 @@
 package com.github.antego.cluster;
 
-import com.github.antego.ConfigurationKey;
+import com.codahale.metrics.Timer;
+import com.github.antego.util.ConfigurationKey;
+import com.github.antego.util.MetricName;
+import com.github.antego.util.Monitoring;
 import com.typesafe.config.Config;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
@@ -10,13 +13,10 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class Coordinator implements AutoCloseable {
@@ -92,24 +92,26 @@ public class Coordinator implements AutoCloseable {
      * Assignment of ClusterState is done to the volatile variable.
      */
     public void refreshClusterState() throws KeeperException, InterruptedException {
-        logger.info("Refreshing cluster state");
-        ClusterWatcher watcher = watcherFactory.createWatcher(this);
-        List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, watcher);
-        logger.info("Received cluster nodes {}", newChildrenNodes.toString());
-        List<Node> nodes = new ArrayList<>();
-        for (String path : newChildrenNodes) {
-            String id = path.substring(nodePrefix.length(), path.length());
-            byte[] data;
-            try {
-                data = zookeeper.getData(rootNodeName + "/" + path, false, null);
-            } catch (KeeperException.NoNodeException e) {
-                logger.error("Can't retrieve data for node [{}]. Node not found.", e);
-                continue;
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REFRESH_CLUSTER_STATE)) {
+            logger.info("Refreshing cluster state");
+            ClusterWatcher watcher = watcherFactory.createWatcher(this);
+            List<String> newChildrenNodes = zookeeper.getChildren(rootNodeName, watcher);
+            logger.info("Received cluster nodes {}", newChildrenNodes.toString());
+            List<Node> nodes = new ArrayList<>();
+            for (String path : newChildrenNodes) {
+                String id = path.substring(nodePrefix.length(), path.length());
+                byte[] data;
+                try {
+                    data = zookeeper.getData(rootNodeName + "/" + path, false, null);
+                } catch (KeeperException.NoNodeException e) {
+                    logger.error("Can't retrieve data for node [{}]. Node not found.", e);
+                    continue;
+                }
+                Node node = Node.fromIdAndData(id, data);
+                nodes.add(node);
             }
-            Node node = Node.fromIdAndData(id, data);
-            nodes.add(node);
+            clusterState = new ClusterState(nodes, selfId);
         }
-        clusterState = new ClusterState(nodes, selfId);
     }
 
     public void removeSelf() throws Exception {

@@ -1,8 +1,11 @@
 package com.github.antego.core;
 
+import com.codahale.metrics.Timer;
 import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.cluster.ClusterState;
 import com.github.antego.cluster.Coordinator;
+import com.github.antego.util.MetricName;
+import com.github.antego.util.Monitoring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,17 +91,20 @@ public class MetricRouter {
 
     //todo rebalancer thread
     private void rebalance() throws Exception {
-        logger.info("Rebalancing metrics");
-        Set<String> metricNames = localStorage.getAllMetricNames();
-        for (String name : metricNames) {
-            if (!state.isMetricOwnedByMe(name.hashCode())) {
-                URI targetUri = state.getUriOfMetricNode(name);
-                logger.debug("Rebalancing metric with name [{}] to node [{}]", name, targetUri);
-                List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
-                for (Metric metric : metrics) {
-                    remoteNodeClient.put(metric, targetUri);
+        Monitoring.mark(MetricName.REBALANCES);
+        try (Timer.Context context = Monitoring.getTimerContext(MetricName.REBALANCES)) {
+            logger.info("Rebalancing metrics");
+            Set<String> metricNames = localStorage.getAllMetricNames();
+            for (String name : metricNames) {
+                if (!state.isMetricOwnedByMe(name.hashCode())) {
+                    URI targetUri = state.getUriOfMetricNode(name);
+                    logger.debug("Rebalancing metric with name [{}] to node [{}]", name, targetUri);
+                    List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
+                    for (Metric metric : metrics) {
+                        remoteNodeClient.put(metric, targetUri);
+                    }
+                    localStorage.delete(name);
                 }
-                localStorage.delete(name);
             }
         }
     }

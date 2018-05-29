@@ -6,6 +6,7 @@ import com.github.antego.cluster.Coordinator;
 import com.github.antego.core.LocalStorage;
 import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.core.MetricRouter;
+import com.github.antego.util.Utils;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.zookeeper.ZooKeeper;

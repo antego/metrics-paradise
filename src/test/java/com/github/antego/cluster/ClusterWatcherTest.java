@@ -1,6 +1,6 @@
 package com.github.antego.cluster;
 
-import com.github.antego.ConfigurationKey;
+import com.github.antego.util.ConfigurationKey;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
@@ -19,7 +19,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.generateRandomNode;
-import static com.github.antego.Utils.createZookeeperClient;
+import static com.github.antego.util.Utils.createZookeeperClient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;

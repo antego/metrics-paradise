@@ -1,10 +1,9 @@
 package com.github.antego.cluster;
 
-import com.github.antego.ConfigurationKey;
+import com.github.antego.util.ConfigurationKey;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValueFactory;
-import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -15,27 +14,22 @@ import org.junit.Test;
 import org.testcontainers.containers.GenericContainer;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.antego.ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME;
+import static com.github.antego.util.ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME;
 import static com.github.antego.TestHelper.createPath;
 import static com.github.antego.TestHelper.generateRandomNode;
-import static com.github.antego.Utils.createZookeeperClient;
+import static com.github.antego.util.Utils.createZookeeperClient;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 public class CoordinatorTest {
     private static Config config = ConfigFactory.load();
