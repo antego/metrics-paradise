@@ -97,7 +97,7 @@ Query minimal values of group of metrics
 ```
 GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric_name=metricc1&metric_name=metricc2&aggr_type=min'
 ```
-Response would be a tsv text with aggregations in the same order as in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
+Response would be a tsv text with metric aggregations in the same order as metrics in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
 
 ### Results of performance testing
 
@@ -110,6 +110,15 @@ Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 ### Architecture
 
 ![](architecture.png)
+
+
+Main components are:
+* __API Endpoint.__ Receives metrics in a tsv format and responds to a queries in a tsv format. Also it serializes and deserializes tsv to lists of `Metric` instancses. Finally passing serialized metrics to a `MetricRouter`.
+* __MetricRouter.__ Routes metrics and queries to right nodes. Suitable node is found by modulo dividing metric name hashcode. Same principle as in the Java's HashMap. List of nodes (`ClusterState`) for computation is acquired from the `Coordinator`. If metric belongs to the current node than it gets saved or requested from a `LocalStorage`. Else request is send to other node via `RemoteNodeClient`.
+* __LocalStorage.__ Wrapper around H2 database with convenient methods of putting and acquiring the metrics. Metrics can reside on a disk or in a memory thanks to the H2 flexibility.
+* __RemoteNodeClient.__ Proxies requests from one node to another via HTTP interface. 
+* __Coordinator.__ Maintains state of a cluster. Registers current node in a zookeeper and watches for deleted and added nodes. Provides list of nodes for `MetricRouter`.
+
 ### Limitations
 
 * No metric processing. Only storaging.
