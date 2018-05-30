@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 public class ClusterState {
     private final int numberOfInstances;
@@ -18,7 +17,8 @@ public class ClusterState {
             // Node doesn't have the id before introducing itself
             selfIndex = -1;
         } else {
-            selfIndex = Collections.binarySearch(nodes, new Node(selfId, null, 0), Comparator.comparing(Node::getId));
+            selfIndex = Collections.binarySearch(nodes, new Node(selfId, null, 0),
+                    Comparator.comparing(Node::getId));
         }
         this.nodes = nodes;
     }

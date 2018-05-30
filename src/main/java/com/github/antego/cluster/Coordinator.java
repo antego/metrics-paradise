@@ -20,7 +20,7 @@ import java.util.UUID;
 
 
 /**
- * Class is responsible for maintenance of up-to-date cluster state
+ * Class is responsible for maintenance of up-to-date cluster state.
  */
 public class Coordinator implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(Coordinator.class);
