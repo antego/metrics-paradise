@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * The class {@code MetricRouter} is responsible for relaying metrics and queries to the right node.
+ *
  * Thread-safe
  */
 public class MetricRouter {
@@ -99,15 +101,24 @@ public class MetricRouter {
             Set<String> metricNames = localStorage.getAllMetricNames();
             for (String name : metricNames) {
                 if (!state.isMetricOwnedByMe(name.hashCode())) {
-                    URI targetUri = state.getUriOfMetricNode(name);
-                    logger.debug("Rebalancing metric with name [{}] to node [{}]", name, targetUri);
-                    List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
-                    for (Metric metric : metrics) {
-                        remoteNodeClient.put(metric, targetUri);
-                    }
-                    localStorage.delete(name);
+                    migrateMetricToOtherNode(name);
                 }
             }
+        }
+    }
+
+    private void migrateMetricToOtherNode(String name) {
+        URI targetUri = null;
+        try {
+            targetUri = state.getUriOfMetricNode(name);
+            logger.debug("Migrating metric with name [{}] to node [{}]", name, targetUri);
+            List<Metric> metrics = localStorage.get(name, 0, Long.MAX_VALUE);
+            for (Metric metric : metrics) {
+                remoteNodeClient.put(metric, targetUri);
+            }
+            localStorage.delete(name);
+        } catch (Exception e) {
+            logger.error("Failed to migrate metric [{}] to node [{}]: {}", name, targetUri, e.getMessage());
         }
     }
 

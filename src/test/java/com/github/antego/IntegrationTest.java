@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.github.antego.api.MetricResource.CHECK_PATH;
+import static com.github.antego.api.MetricResource.SHUTDOWN_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -184,7 +186,7 @@ public class IntegrationTest {
             Response response = null;
             for (int i = 0; i < 5; i++) {
                 try {
-                    response = client.newRequest(host).path("/check").timeout(10, TimeUnit.SECONDS).method(HttpMethod.GET).send();
+                    response = client.newRequest(host).path(CHECK_PATH).timeout(10, TimeUnit.SECONDS).method(HttpMethod.GET).send();
                 } catch (ExecutionException e) {
                     Thread.sleep(5000);
                 }
@@ -196,7 +198,7 @@ public class IntegrationTest {
         }
 
         public void shutdown() throws InterruptedException, ExecutionException, TimeoutException {
-            client.newRequest(host).path("/shutdown").method(HttpMethod.GET).send();
+            client.newRequest(host).path(SHUTDOWN_PATH).method(HttpMethod.GET).send();
             endpointLatch.await();
         }
     }

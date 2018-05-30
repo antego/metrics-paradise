@@ -15,6 +15,9 @@ import javax.ws.rs.core.Response;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 
+import static com.github.antego.api.MetricResource.METRICNAME;
+import static com.github.antego.api.MetricResource.TIMESTAMPEND;
+import static com.github.antego.api.MetricResource.TIMESTAMPSTART;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -50,10 +53,10 @@ public class MetricResourceTest extends JerseyTest {
                 .thenReturn(Arrays.asList(metric1), Arrays.asList(metric2));
 
         Response response = target("metrics")
-                .queryParam("timestampstart", 1000)
-                .queryParam("timestampend", 1002)
-                .queryParam("metricname", "metric1")
-                .queryParam("metricname", "metric2")
+                .queryParam(TIMESTAMPSTART, 1000)
+                .queryParam(TIMESTAMPEND, 1002)
+                .queryParam(METRICNAME, "metric1")
+                .queryParam(METRICNAME, "metric2")
                 .request()
                 .get();
         assertEquals(200, response.getStatus());

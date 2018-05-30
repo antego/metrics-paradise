@@ -22,6 +22,11 @@ import org.slf4j.LoggerFactory;
 import java.net.URI;
 import java.util.List;
 
+import static com.github.antego.api.MetricResource.AGGR;
+import static com.github.antego.api.MetricResource.METRICNAME;
+import static com.github.antego.api.MetricResource.METRICS_PATH;
+import static com.github.antego.api.MetricResource.TIMESTAMPEND;
+import static com.github.antego.api.MetricResource.TIMESTAMPSTART;
 import static com.github.antego.util.Utils.dumpMetricToTsv;
 
 public class RemoteNodeClient implements AutoCloseable {
@@ -53,7 +58,7 @@ public class RemoteNodeClient implements AutoCloseable {
             secureIfNeeded(uri);
             Response response = httpClient.POST(uri)
                     .content(new StringContentProvider(dumpMetricToTsv(metric)))
-                    .path("/metrics").send();
+                    .path(METRICS_PATH).send();
             if (response.getStatus() != 201) {
                 throw new Exception("Failed to write metric");
             }
@@ -66,11 +71,11 @@ public class RemoteNodeClient implements AutoCloseable {
             secureIfNeeded(uri);
             ContentResponse response = httpClient.newRequest(uri)
                     .method(HttpMethod.GET)
-                    .param("timestampstart", String.valueOf(startTime))
-                    .param("timestampend", String.valueOf(endTime))
-                    .param("metricname", metric)
+                    .param(TIMESTAMPSTART, String.valueOf(startTime))
+                    .param(TIMESTAMPEND, String.valueOf(endTime))
+                    .param(METRICNAME, metric)
                     .accept("text/plain")
-                    .path("/metrics").send();
+                    .path(METRICS_PATH).send();
             String tsv = response.getContentAsString();
             return Utils.parseTsv(tsv);
         }
@@ -82,12 +87,12 @@ public class RemoteNodeClient implements AutoCloseable {
             secureIfNeeded(uri);
             ContentResponse response = httpClient.newRequest(uri)
                     .method(HttpMethod.GET)
-                    .param("timestampstart", String.valueOf(startTime))
-                    .param("timestampend", String.valueOf(endTime))
-                    .param("metricname", name)
-                    .param("aggr", type.toString())
+                    .param(TIMESTAMPSTART, String.valueOf(startTime))
+                    .param(TIMESTAMPEND, String.valueOf(endTime))
+                    .param(METRICNAME, name)
+                    .param(AGGR, type.toString())
                     .accept("text/plain")
-                    .path("/metrics").send();
+                    .path(METRICS_PATH).send();
             String value = response.getContentAsString();
             return Double.valueOf(value);
         }

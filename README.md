@@ -33,7 +33,7 @@ Also CH is crashing on malformed queries.
 
 I didn't like the scaling ability of CH and I got excited about building truly scalable storage system by myself.
 
-## Second approach. 
+## Second approach
 
 *Building a scalable storage system which one can be proud of.*
 
@@ -52,7 +52,7 @@ Independent from external services. It doesn't need messaging systems or databas
 
 ### Building and running
 
-Note: Instead of writing additional service for sending metrics I decided to learn and use special tool such as JMeter.
+Note: Instead of writing additional service for sending metrics I decided to practice and become more familiar with a JMeter.
 
 Prerequisits
 * Java 8
@@ -66,16 +66,36 @@ mvn package
 
 To run two node cluster and performance test on it
 ```
-docker-compose up
+docker-compose --project-name metrics-paradise up
 ```
 Also it will start Grafana with beautiful dashboard of service metrics. Credentials are `admin/admin`.
 <http://localhost:3000/d/cvQIZ84ik/metrics-paradise?refresh=5s&orgId=1&from=now-30m&to=now&theme=light>
 
 To start JMeter again with other test plan
 ```
-docker run --rm -it --network=clickhouse-test_default --name clickhouse-jmeter \
+docker run --rm -it --network=metrics-paradise_default --name mp-jmeter \
  -v ${PWD}/config/20k-10thread.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
 ```
+
+
+### Example queries
+
+Put metrics
+```
+echo -ne "1000000\tmetricc1\t0.5\n1000001\tmetricc2\t0.7\n" | POST http://localhost:8080/metrics
+```
+
+Query group of metrics
+```
+GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric_name=metricc1&metric_name=metricc2'
+```
+
+Query minimal values of group of metrics
+```
+GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric_name=metricc1&metric_name=metricc2&aggr_type=min'
+```
+Response would be a tsv text with aggregations in the same order as in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
+
 ### Results of performance testing
 
 200 000 metrics has size of 5MB on a file system. 
@@ -89,7 +109,7 @@ Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 ![](architecture.png)
 ### Limitations
 
-* No metric processing. Only storage.
+* No metric processing. Only storaging.
 * Slow. The underlying database is single threaded.
 * Slow rebalances. Rebalances not uses the ability to bulk load the data.
 

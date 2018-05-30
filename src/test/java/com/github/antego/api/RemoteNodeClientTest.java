@@ -1,6 +1,5 @@
 package com.github.antego.api;
 
-import com.github.antego.api.RemoteNodeClient;
 import com.github.antego.core.Metric;
 import com.typesafe.config.Config;
 import org.junit.Rule;
@@ -14,6 +13,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static com.github.antego.api.MetricResource.METRICS_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockserver.model.HttpRequest.request;
@@ -32,7 +32,7 @@ public class RemoteNodeClientTest {
     @Test
     public void shouldSendPut() throws Exception {
         HttpRequest request = request().withMethod("POST")
-                .withPath("/metrics")
+                .withPath(METRICS_PATH)
                 .withBody("10\tmetric\t2.0\n", StandardCharsets.UTF_8);
 
         mockServerClient.when(request).respond(response().withStatusCode(201));
@@ -46,7 +46,7 @@ public class RemoteNodeClientTest {
     @Test
     public void shouldSendGet() throws Exception {
         HttpRequest request = request().withMethod("GET")
-                .withPath("/metrics");
+                .withPath(METRICS_PATH);
 
         mockServerClient.when(request).respond(response().withBody("10\tmetric\t456456\n"));
 

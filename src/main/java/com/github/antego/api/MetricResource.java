@@ -30,6 +30,15 @@ import static com.github.antego.util.Utils.parseTsv;
 @Path("/")
 public class MetricResource {
     private static final Logger logger = LoggerFactory.getLogger(MetricResource.class);
+
+    public static final String TIMESTAMPSTART = "time_start_sec";
+    public static final String TIMESTAMPEND = "time_end_sec";
+    public static final String METRICNAME = "metric_name";
+    public static final String AGGR = "aggr_type";
+    public static final String METRICS_PATH = "/metrics";
+    public static final String SHUTDOWN_PATH = "/shutdown";
+    public static final String CHECK_PATH = "/check";
+
     private final MetricRouter metricRouter;
     private final CountDownLatch shutdown;
 
@@ -40,12 +49,12 @@ public class MetricResource {
     }
 
     @GET
-    @Path("/metrics")
+    @Path(METRICS_PATH)
     @Produces(MediaType.TEXT_PLAIN)
-    public String getMetricsInTsv(@QueryParam("timestampstart") long timestampStart,
-                              @QueryParam("timestampend") long timestampEnd,
-                              @QueryParam("metricname") List<String> metricNames,
-                              @QueryParam("aggr") String aggrRaw) throws Exception {
+    public String getMetricsInTsv(@QueryParam(TIMESTAMPSTART) long timestampStart,
+                              @QueryParam(TIMESTAMPEND) long timestampEnd,
+                              @QueryParam(METRICNAME) List<String> metricNames,
+                              @QueryParam(AGGR) String aggrRaw) throws Exception {
         Monitoring.mark(MetricName.GET_REQUEST);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.GET_REQUEST_TIME)) {
             logger.debug("Received query for metrics {}, [{}], [{}], [{}]", metricNames, timestampStart, timestampEnd, aggrRaw);
@@ -55,7 +64,7 @@ public class MetricResource {
                     results.add(metricRouter.getAggregated(metricName,
                             timestampStart, timestampEnd, AggregationType.valueOf(aggrRaw.toUpperCase())));
                 }
-                return results.stream().map(Object::toString).collect(Collectors.joining("\t"));
+                return results.stream().map(Object::toString).collect(Collectors.joining("\t", "", "\n"));
             }
             StringBuilder results = new StringBuilder();
             for (String metricName : metricNames) {
@@ -66,7 +75,7 @@ public class MetricResource {
     }
 
     @POST
-    @Path("/metrics")
+    @Path(METRICS_PATH)
     public Response saveMetricsFromTsv(String tsv) throws Exception {
         Monitoring.mark(MetricName.POST_REQUEST);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.POST_REQUEST_TIME)) {
@@ -90,7 +99,7 @@ public class MetricResource {
     }
 
     @GET
-    @Path("/shutdown")
+    @Path(SHUTDOWN_PATH)
     public Response shutdown() {
         logger.info("Received shutdown command");
         shutdown.countDown();
@@ -98,7 +107,7 @@ public class MetricResource {
     }
 
     @GET
-    @Path("/check")
+    @Path(CHECK_PATH)
     public Response checkAvailable() {
         return Response.status(200).build();
     }

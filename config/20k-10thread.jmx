@@ -160,21 +160,21 @@
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
           <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
             <collectionProp name="Arguments.arguments">
-              <elementProp name="timestampstart" elementType="HTTPArgument">
+              <elementProp name="time_start_sec" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">${__Random(1000000,1500000)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">timestampstart</stringProp>
               </elementProp>
-              <elementProp name="timestampend" elementType="HTTPArgument">
+              <elementProp name="time_end_sec" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">${__Random(1500000,2000000)}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
                 <boolProp name="HTTPArgument.use_equals">true</boolProp>
                 <stringProp name="Argument.name">timestampend</stringProp>
               </elementProp>
-              <elementProp name="metricname" elementType="HTTPArgument">
+              <elementProp name="metric_name" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">metric${metric}</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>

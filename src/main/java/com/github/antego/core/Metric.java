@@ -22,4 +22,13 @@ public class Metric {
     public double getValue() {
         return value;
     }
+
+    @Override
+    public String toString() {
+        return "Metric{" +
+                "timestamp=" + timestamp +
+                ", name='" + name + '\'' +
+                ", value=" + value +
+                '}';
+    }
 }
