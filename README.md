@@ -23,11 +23,11 @@ To run load test just execute the command
 ./run-clickhouse-test.sh
 ```
 
-It will run four nodes of CH with two shards and two replicas. Then script will create distributed table for metrics and start JMeter.
+It will run four nodes of CH with two shards and two replicas. After that script will create distributed table for metrics and start JMeter.
 
 On an average machine it pushes metrics with a rate of 60 RPS.
 
-Scaling mechanism of CH is not very convenient. The cluster nodes are listed in the config file. When it's time to add more instances each config file must be redeployed. Config files can't be redeployed on a working node therefore each node have to be switched off. Common case is to redeploy new configuration on one set of replicas than on another. This method lowers fault tolerance of the system.
+Scaling mechanism of CH is not very convenient. The cluster nodes are listed in the config file. When it's time to add more instances each config file must be redeployed. Config files can't be redeployed on a working node therefore each node have to be switched off. Common case is to redeploy new configuration on one set of replicas then on another. This method lowers fault tolerance of the system.
 
 Also CH is crashing on malformed queries.
 
@@ -99,6 +99,17 @@ GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric
 ```
 Response would be a tsv text with metric aggregations in the same order as metrics in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
 
+Shutdown node
+```
+GET 'http://localhost:8080/shutdown'
+```
+
+API can be secured by switching on `jetty.security.enabled` property.
+Example request to a secured node
+```
+GET 'http://user:password@localhost:8080/check'
+```
+
 ### Results of performance testing
 
 200 000 metrics has size of 5MB on a file system. 
@@ -114,16 +125,26 @@ Select queries processed at a rate of 5 RPS on a set of 200k metrics.
 
 Main components are:
 * __API Endpoint.__ Receives metrics in a tsv format and responds to a queries in a tsv format. Also it serializes and deserializes tsv to lists of `Metric` instancses. Finally passing serialized metrics to a `MetricRouter`.
-* __MetricRouter.__ Routes metrics and queries to right nodes. Suitable node is found by modulo dividing metric name hashcode. Same principle as in the Java's HashMap. List of nodes (`ClusterState`) for computation is acquired from the `Coordinator`. If metric belongs to the current node than it gets saved or requested from a `LocalStorage`. Else request is send to other node via `RemoteNodeClient`.
+* __MetricRouter.__ Routes metrics and queries to right nodes. Suitable node is found by modulo dividing metric name hashcode. Same principle as in the Java's HashMap. List of nodes (`ClusterState`) for computation is acquired from the `Coordinator`. If metric belongs to the current node then it gets saved or requested from a `LocalStorage`. Else request is send to other node via `RemoteNodeClient`.
 * __LocalStorage.__ Wrapper around H2 database with convenient methods of putting and acquiring the metrics. Metrics can reside on a disk or in a memory thanks to the H2 flexibility.
 * __RemoteNodeClient.__ Proxies requests from one node to another via HTTP interface. 
-* __Coordinator.__ Maintains state of a cluster. Registers current node in a zookeeper and watches for deleted and added nodes. Provides list of nodes for `MetricRouter`.
+* __Coordinator.__ Maintains state of a cluster. Registers current node in a zookeeper and watches for deleted and added nodes. Provides list of nodes for `MetricRouter`. Node is accessible to other nodes by address listed in a `advertise.host` property. 
+
+### Scaling up
+
+To add a new node 
+1. Start the new node connected to the same zookeeper as the other nodes
+2. Set config property `advertised.host` to an external address of a embedded Jetty server. Jetty server should be accessible by other nodes on that address. 
+
+### Scaling down
+To scale down or shutdown a service without loss of data just send GET request to a `/shutdown` path
 
 ### Limitations
 
 * No metric processing. Only storaging.
 * Slow. The underlying database is single threaded.
 * Slow rebalances. Rebalances not uses the ability to bulk load the data.
+* Rebalancing is bound to incoming requests. Can be extracted to a separate thread.
 
 
 

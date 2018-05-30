@@ -6,6 +6,9 @@ import org.apache.zookeeper.Watcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class watches for a new or deleted nodes. Watcher is registered on a root zookeeper node.
+ */
 public class ClusterWatcher implements Watcher {
     private final static Logger logger = LoggerFactory.getLogger(ClusterWatcher.class);
     private Coordinator coordinator;

@@ -93,7 +93,6 @@ public class MetricRouter {
         return false;
     }
 
-    //todo rebalancer thread
     private void rebalance() throws Exception {
         Monitoring.mark(MetricName.REBALANCE);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.REBALANCE_TIME)) {

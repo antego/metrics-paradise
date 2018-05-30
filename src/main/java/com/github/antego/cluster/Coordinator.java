@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.UUID;
 
 
+/**
+ * Class is responsible for maintenance of up-to-date cluster state
+ */
 public class Coordinator implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(Coordinator.class);
 
@@ -31,16 +34,14 @@ public class Coordinator implements AutoCloseable {
     private volatile ClusterState clusterState;
     private volatile String selfId;
 
-    public Coordinator(ZooKeeper zooKeeper, Config config, ClusterWatcherFactory watcherFactory) {
+    public Coordinator(ZooKeeper zooKeeper, Config config, ClusterWatcherFactory watcherFactory) throws KeeperException, InterruptedException {
         logger.info("Creating Coordinator");
         this.config = config;
         rootNodeName = config.getString(ConfigurationKey.ZOOKEEPER_ROOT_NODE_NAME);
         nodePrefix = config.getString(ConfigurationKey.ZOOKEEPER_NODE_PREFIX);
         this.watcherFactory = watcherFactory;
         this.zookeeper = zooKeeper;
-    }
 
-    public void init() throws KeeperException, InterruptedException {
         logger.info("Initializing Coordinator");
         createRootNodeIfNotExists();
         refreshClusterState();
@@ -52,6 +53,15 @@ public class Coordinator implements AutoCloseable {
         zookeeper.close();
     }
 
+    /**
+     * Create node in a zookeeper thus notify other nodes of our presence.
+     * Not called from init because we need a time to rebalance stale data on a restart.
+     *
+     *
+     * @param id Id which will be advertised to other nodes
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
     public void advertiseSelf(String id) throws KeeperException, InterruptedException {
         logger.info("Notifying cluster about me");
         createSelfNode(id);

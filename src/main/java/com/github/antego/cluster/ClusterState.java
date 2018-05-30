@@ -15,7 +15,7 @@ public class ClusterState {
         nodes.sort(Comparator.comparing(Node::getId));
         numberOfInstances = nodes.size();
         if (selfId == null) {
-            //before introducing itself to the cluster Node doesn't have the id
+            // Node doesn't have the id before introducing itself
             selfIndex = -1;
         } else {
             selfIndex = Collections.binarySearch(nodes, new Node(selfId, null, 0), Comparator.comparing(Node::getId));

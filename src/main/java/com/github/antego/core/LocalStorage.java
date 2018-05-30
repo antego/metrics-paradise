@@ -58,7 +58,6 @@ public class LocalStorage {
         deleteStmt = connection.prepareStatement(DELETE_METRICS);
     }
 
-    //todo aggreagate queries
     public void put(Metric metric) throws SQLException {
         Monitoring.mark(MetricName.STORAGE_PUT);
         try (Timer.Context context = Monitoring.getTimerContext(MetricName.STORAGE_PUT_TIME)) {

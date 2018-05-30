@@ -68,8 +68,6 @@ public class CoordinatorTest {
     public void shouldCreateRootNodeOnStart() throws Exception {
         Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
 
-        coordinator.init();
-
         Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME), false);
         assertTrue(stat != null);
     }
@@ -78,7 +76,6 @@ public class CoordinatorTest {
     public void shouldDeleteNodeOnExit() throws Exception {
         Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
 
-        coordinator.init();
         coordinator.advertiseSelf("1");
         coordinator.close();
 
@@ -101,7 +98,6 @@ public class CoordinatorTest {
                 });
             }
         });
-        coordinator.init();
 
         createPath(zookeeperClient, generateRandomNode(config.getString(ZOOKEEPER_ROOT_NODE_NAME)));
         latch.await(10, TimeUnit.SECONDS);
@@ -112,7 +108,6 @@ public class CoordinatorTest {
     public void shouldRemoveSelf() throws Exception {
         Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
 
-        coordinator.init();
         coordinator.advertiseSelf("1");
         coordinator.removeSelf();
 
@@ -124,7 +119,6 @@ public class CoordinatorTest {
     public void shouldCreateSelfNode() throws Exception {
         Coordinator coordinator = new Coordinator(zookeeperForCoordinator, config, factory);
 
-        coordinator.init();
         coordinator.advertiseSelf("1");
 
         Stat stat = zookeeperClient.exists(config.getString(ZOOKEEPER_ROOT_NODE_NAME) + "/node1", false);

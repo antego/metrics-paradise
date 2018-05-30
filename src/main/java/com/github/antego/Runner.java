@@ -16,6 +16,19 @@ import org.slf4j.LoggerFactory;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 
+
+/**
+ * Runner class. Represents a lifecycle of a node.
+ * Lifecycle:
+ * 1. Fire up coordinator and get up-to-date state of a cluster.
+ * 2. Prepare {@code MetricRouter}.
+ * 3. Call rebalance. In case of cold start it will do nothing.
+ * If node is starting after restart than all data will be rebalanced from it to other nodes.
+ * 4. Start API Endpoint for serving requests. Passed latch will stop the main thread from
+ * proceeding to a shutdown sequence. Latch will be unlocked on a /shutdown api call.
+ * 5. On a shutdown the sequence is opposite to a start sequence.
+ * First current node deleted from the zookeeper and data is migrated to the other nodes.
+ */
 public class Runner {
     private static final Logger logger = LoggerFactory.getLogger(Runner.class);
 
@@ -26,9 +39,9 @@ public class Runner {
     public void start(Config config) {
         logger.info("Starting Metrics Paradise Node");
         try {
+            // Start phase
             ZooKeeper zooKeeper = Utils.createZookeeperClient(config);
             Coordinator coordinator = new Coordinator(zooKeeper, config, new ClusterWatcherFactory());
-            coordinator.init();
 
             MetricRouter metricRouter = new MetricRouter(new LocalStorage(), coordinator, new RemoteNodeClient(config));
             metricRouter.doRebalanceIfNeeded();
@@ -37,6 +50,7 @@ public class Runner {
             Endpoint endpoint = new Endpoint(metricRouter, shutdown, config);
             endpoint.start();
 
+            // Normal work
             coordinator.advertiseSelf(UUID.randomUUID().toString());
 
             try {
@@ -44,6 +58,7 @@ public class Runner {
             } catch (InterruptedException ignore) {
             }
 
+            // Shutdown phase
             coordinator.removeSelf();
             endpoint.stop();
 

@@ -30,7 +30,6 @@ public class Endpoint {
     private CountDownLatch shutdown;
     private Server server;
 
-    //todo secure
     public Endpoint(MetricRouter metricRouter, CountDownLatch shutdown, Config config) {
         this.metricRouter = metricRouter;
         this.shutdown = shutdown;

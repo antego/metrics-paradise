@@ -31,6 +31,7 @@ import static com.github.antego.util.Utils.dumpMetricToTsv;
 
 public class RemoteNodeClient implements AutoCloseable {
     private final static Logger logger = LoggerFactory.getLogger(RemoteNodeClient.class);
+
     private final HttpClient httpClient = new HttpClient();
     private final AuthenticationStore store;
     private final boolean securityEnabled;
