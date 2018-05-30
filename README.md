@@ -64,7 +64,7 @@ To build Docker image
 mvn package
 ```
 
-To run two node cluster and performance test on it
+To run two nodes cluster and performance test on it
 ```
 docker-compose --project-name metrics-paradise up
 ```
@@ -76,7 +76,7 @@ To start JMeter again with other test plan
 docker run --rm -it --network=metrics-paradise_default --name mp-jmeter \
  -v ${PWD}/config/20k-10thread.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
 ```
-Shutdown services
+It is recommended to remove containers after stopping them
 ```
 docker-compose --project-name metrics-paradise down
 ```
