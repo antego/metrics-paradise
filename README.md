@@ -23,7 +23,7 @@ To run load test just execute the command
 ./run-clickhouse-test.sh
 ```
 
-It will run four nodes of CH with two shards and two replicas. After that script will create distributed table for metrics and start JMeter.
+It will run four nodes of CH with two shards and two replicas. Script will create distributed table for metrics and start JMeter.
 
 On an average machine it pushes metrics with a rate of 60 RPS.
 
@@ -40,7 +40,7 @@ I didn't like the scaling ability of CH and I got excited about building truly s
 The new distributed database has humble name of Metrics Paradise. Core of it's features:
 
 * __Easily scalable.__
-Just by starting the new Node every other node knows about it and automatically rebalances it's data.
+Just by starting the new node every other node knows about it and automatically rebalances it's data.
 * __Easily downscalable.__ 
 Node can be disabled by REST API. Before shutting down it will rebalnce it's data to the other nodes. No data loss!
 * __Has secured HTTP interface.__
@@ -99,7 +99,7 @@ GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric
 ```
 Response would be a tsv text with metric aggregations in the same order as metrics in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
 
-Shutdown node
+Disable node
 ```
 GET 'http://localhost:8080/shutdown'
 ```
