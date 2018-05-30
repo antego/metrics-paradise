@@ -76,7 +76,10 @@ To start JMeter again with other test plan
 docker run --rm -it --network=metrics-paradise_default --name mp-jmeter \
  -v ${PWD}/config/20k-10thread.jmx:/tests/test.jmx justb4/jmeter -n -t "/tests/test.jmx"
 ```
-
+Shutdown services
+```
+docker-compose --project-name metrics-paradise down
+```
 
 ### Example queries
 
