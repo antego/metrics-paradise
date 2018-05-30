@@ -1,6 +1,6 @@
 # Metrics Paradise
 
-Let's imaging that we have a task of processing and storing large amount of IoT metrics. How would we do that? One approach is to use existing tools and technologies. Other is to design and develop the system from scratch. In these repo I will try both options.
+Let's imagine that we have a task of processing and persisting large amount of IoT metrics. How would we do that? One approach is to use existing tools and technologies. Other is to design and develop the system from scratch. In these repo I will try both options.
 
 I'll start with the first approach. Usage of well known and common products, such as databases and messaging systems seems simpler because we don't need to write code and also cheaper because we don't have to maintain it later. Also it's easier to find people familiar with these technologies. 
 
@@ -145,6 +145,7 @@ To scale down or shutdown a service without loss of data just send GET request t
 * Slow. The underlying database is single threaded.
 * Slow rebalances. Rebalances not uses the ability to bulk load the data.
 * Rebalancing is bound to incoming requests. Can be extracted to a separate thread.
+* Poor handling of nodes crashes.
 
 
 
