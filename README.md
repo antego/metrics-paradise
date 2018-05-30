@@ -48,7 +48,7 @@ It doesn't matter to which node metrics gets pushed. They will be stored on the 
 * __Fast.__
 One node can handle up to 6K RPS on an average machine. It's like a whole green house of thermometers.
 * __Self-contained.__
-Independent from external services. It doesn't need messaging systems or databases. It depends on ZooKeeper though but every cool peace of software today needs ZooKeeper so it's a plus.
+Independent from external services. It doesn't need messaging systems or databases. It depends on ZooKeeper though but every cool software project today needs ZooKeeper so it's a plus.
 
 ### Building and running
 
