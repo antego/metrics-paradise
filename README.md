@@ -87,17 +87,29 @@ Put metrics
 ```
 echo -ne "1000000\tmetricc1\t0.5\n1000001\tmetricc2\t0.7\n" | POST http://localhost:8080/metrics
 ```
+Metrics are sent in the TSV format in a body of POST request.
+Columns: 
+* Unix time in seconds.
+* Metric name.
+* Metric value.
 
 Query group of metrics
 ```
 GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric_name=metricc1&metric_name=metricc2'
 ```
+Parameters
+* time_start_sec - unix time of first event
+* time_end_sec - unix time of last event, exclusive
+* metric_name - name of a metric. May be repeated for multiple metrics
 
 Query minimal values of group of metrics
 ```
 GET 'http://localhost:8080/metrics?time_start_sec=0&time_end_sec=20000000&metric_name=metricc1&metric_name=metricc2&aggr_type=min'
 ```
-Response would be a tsv text with metric aggregations in the same order as metrics in the query. For querying other types of aggregation set query parameter `aggr_type` to values `min`, `max`, `mean`.
+Parameters same as in previous query plus one more
+* aggr_type - type of aggregation. Possible values `min`, `max`, `mean`
+
+Response would be a TSV text with metric aggregations in the same order as metrics in the query.
 
 Disable node
 ```
